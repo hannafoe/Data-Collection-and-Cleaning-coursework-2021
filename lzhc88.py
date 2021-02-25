@@ -10,6 +10,7 @@ import re
 #of the top 100 articles relevant to the given keywords from
 #the following url: https://www.bbc.co.uk/news
 url = 'https://www.bbc.co.uk/search'
+link_dict ={}
 try:
     res = requests.get(url,stream=True,timeout=0.3)
     # If the response was successful, no Exception will be raised
@@ -26,8 +27,12 @@ keywords = ['targeted threat','Advanced Persistent Threat',
 'phishing','DoS attack','malware','computer virus','spyware',
 'malicious bot','ransomware','encryption']
 for key in keywords:
+    link_list = []
+    p=0
+    while(len(link_list)<100):
+
     try:
-        res = requests.get(url,stream=True,params={'q':key})
+        res = requests.get(url,stream=True,params={'q':key,'page':p})
         res.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
@@ -35,16 +40,18 @@ for key in keywords:
         print(f'Other error occurred: {err}')
     else:
         print('Success!')
-        r = requests.get(url,stream=True,params={'q':key})
+        r = requests.get(url,stream=True,params={'q':key,'page':p})
         print(r.url)
         txt = r.text
         soup = BeautifulSoup(txt,features='lxml')
-        links = soup.find_all('a',class_=re.compile("PromoLink"),string=[re.compile(k,re.IGNORECASE) for k in key.split()])
-        #links = soup.find_all('li')
-        #links = soup.find_all(attrs = {"aria-hidden":"false"})
-        for link in links:
-            print(link)
-            print()
+        headlines = soup.find_all('a',class_=re.compile("PromoLink"),string=[re.compile(k,re.IGNORECASE) for k in key.split()])
+        for headline in headlines:
+            link = headline['href']
+            if 'programmes' in link:
+                continue
+            else:
+                print(link)
+                print()
         #print(soup.head)
         #print(soup.title)
         #print(soup.body.b)
@@ -73,6 +80,7 @@ for key in keywords:
 
 
 ## Problem 2
+#Use BeautifulSoup to collect and process the articles contents. Save each article content to a file.
 
 ## Problem 3
 
