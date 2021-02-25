@@ -11,6 +11,8 @@ import re
 #the following url: https://www.bbc.co.uk/news
 url = 'https://www.bbc.co.uk/search'
 link_dict ={}
+num_pages=[]
+num_articles=[]
 try:
     res = requests.get(url,stream=True,timeout=0.3)
     # If the response was successful, no Exception will be raised
@@ -21,59 +23,103 @@ except Exception as err:
     print(f'Other error occurred: {err}')
 else:
     print('Success!')
-    
-
-keywords = ['targeted threat','Advanced Persistent Threat',
-'phishing','DoS attack','malware','computer virus','spyware',
-'malicious bot','ransomware','encryption']
-for key in keywords:
-    link_list = []
-    p=0
-    while(len(link_list)<100):
-
+'''
+link_list = []
+p=1
+while(len(link_list)<100):
     try:
-        res = requests.get(url,stream=True,params={'q':key,'page':p})
-        res.raise_for_status()
+        r = requests.get(url, stream=True, params={'q': 'Advanced Persistent Threat', 'page': p})
+        r.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
     except Exception as err:
         print(f'Other error occurred: {err}')
     else:
-        print('Success!')
-        r = requests.get(url,stream=True,params={'q':key,'page':p})
-        print(r.url)
+        #print('Success!')
+        #print(r.url)
         txt = r.text
-        soup = BeautifulSoup(txt,features='lxml')
-        headlines = soup.find_all('a',class_=re.compile("PromoLink"),string=[re.compile(k,re.IGNORECASE) for k in key.split()])
+        soup = BeautifulSoup(txt, features='lxml')
+        headlines = soup.find_all('a', class_=re.compile("PromoLink"))#, string=[re.compile(k, re.IGNORECASE) for k in key.split()])
+        print(len(headlines))
+        if not headlines:
+            break
         for headline in headlines:
             link = headline['href']
-            if 'programmes' in link:
+            if 'programmes' in link and 'news' not in link:
                 continue
             else:
                 print(link)
-                print()
-        #print(soup.head)
-        #print(soup.title)
-        #print(soup.body.b)
-        #links = soup.select('div div')
-        #print(links)
-        #<ul role="list" spacing="responsive" class="ssrcss-1a1yp44-Stack e1y4nx260">
-        #li
-        #links = soup.find_all('a',string=re.compile(key,re.IGNORECASE))
-        #stripped = re.sub('<[^<]+?>','',txt)
-        #print(stripped)
-        #kern = html.fromstring(r.content)
-        #for link in kern.xpath("//span[contains(@class,'one-click-content')]"):
-        #    if link.text:
-        #        l = link.text.strip()
-        #        print(textwrap.fill(s))
-        #print(kern)
-        #print(txt)
-        #print(soup.prettify())
-        #links = soup.find_all()
-        #for link in links:
-        #    print(link)
-        break
+                link_list.append(link)
+        p+=1
+'''
+keywords = ['targeted threat','Advanced Persistent Threat',
+'phishing','DoS attack','malware','computer virus','spyware',
+'malicious bot','ransomware','encryption']
+for key in keywords:
+    link_list = []
+    p=1
+    while(len(link_list)<100):
+        try:
+            r = requests.get(url, stream=True, params={'q': key, 'page': p})
+            r.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+        else:
+            #print('Success!')
+            #print(r.url)
+            txt = r.text
+            soup = BeautifulSoup(txt, features='lxml')
+            headlines = soup.find_all('a', class_=re.compile("PromoLink"))#, string=[re.compile(k, re.IGNORECASE) for k in key.split()])
+            if not headlines:
+                break
+            for headline in headlines:
+                link = headline['href']
+                if 'programmes' in link and 'news' not in link:
+                    continue
+                else:
+                    #print(link)
+                    link_list.append(link)
+            p+=1
+    #print(p)
+    #print()
+    num_pages.append(p)
+    num_articles.append(len(link_list))
+    link_dict[key] = link_list.copy()
+for element in link_dict:
+    if len(element)>=100:
+        element = element[:100]
+
+for element in link_dict:
+    print(len(element))
+print(num_pages)
+print(num_articles)
+for link in link_dict['Advanced Persistent Threat']:
+    print(link)
+#print(link_dict['Advanced Persistent Threat'])
+            #print(soup.head)
+            #print(soup.title)
+            #print(soup.body.b)
+            #links = soup.select('div div')
+            #print(links)
+            #<ul role="list" spacing="responsive" class="ssrcss-1a1yp44-Stack e1y4nx260">
+            #li
+            #links = soup.find_all('a',string=re.compile(key,re.IGNORECASE))
+            #stripped = re.sub('<[^<]+?>','',txt)
+            #print(stripped)
+            #kern = html.fromstring(r.content)
+            #for link in kern.xpath("//span[contains(@class,'one-click-content')]"):
+            #    if link.text:
+            #        l = link.text.strip()
+            #        print(textwrap.fill(s))
+            #print(kern)
+            #print(txt)
+            #print(soup.prettify())
+            #links = soup.find_all()
+            #for link in links:
+            #    print(link)
+            
 
 
 
