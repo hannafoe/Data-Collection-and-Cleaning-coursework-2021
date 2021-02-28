@@ -87,16 +87,13 @@ for key in keywords:
     num_pages.append(p)
     num_articles.append(len(link_list))
     link_dict[key] = link_list.copy()
+    #print(len(link_dict[key]))
 for element in link_dict:
-    if len(element)>=100:
-        element = element[:100]
+    if len(link_dict[element])>=100:
+        link_dict[element]=link_dict[element][:100]
 
-for element in link_dict:
-    print(len(element))
 print(num_pages)
 print(num_articles)
-for link in link_dict['Advanced Persistent Threat']:
-    print(link)
 #print(link_dict['Advanced Persistent Threat'])
             #print(soup.head)
             #print(soup.title)
