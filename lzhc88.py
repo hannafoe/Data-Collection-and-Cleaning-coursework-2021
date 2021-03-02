@@ -22,36 +22,7 @@ except HTTPError as http_err:
 except Exception as err:
     print(f'Other error occurred: {err}')
 else:
-    print('Success!')
-'''
-link_list = []
-p=1
-while(len(link_list)<100):
-    try:
-        r = requests.get(url, stream=True, params={'q': 'Advanced Persistent Threat', 'page': p})
-        r.raise_for_status()
-    except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')
-    except Exception as err:
-        print(f'Other error occurred: {err}')
-    else:
-        #print('Success!')
-        #print(r.url)
-        txt = r.text
-        soup = BeautifulSoup(txt, features='lxml')
-        headlines = soup.find_all('a', class_=re.compile("PromoLink"))#, string=[re.compile(k, re.IGNORECASE) for k in key.split()])
-        print(len(headlines))
-        if not headlines:
-            break
-        for headline in headlines:
-            link = headline['href']
-            if 'programmes' in link and 'news' not in link:
-                continue
-            else:
-                print(link)
-                link_list.append(link)
-        p+=1
-'''
+    print("success")
 keywords = ['targeted threat','Advanced Persistent Threat',
 'phishing','DoS attack','malware','computer virus','spyware',
 'malicious bot','ransomware','encryption']
@@ -94,36 +65,30 @@ for element in link_dict:
 
 print(num_pages)
 print(num_articles)
-#print(link_dict['Advanced Persistent Threat'])
-            #print(soup.head)
-            #print(soup.title)
-            #print(soup.body.b)
-            #links = soup.select('div div')
-            #print(links)
-            #<ul role="list" spacing="responsive" class="ssrcss-1a1yp44-Stack e1y4nx260">
-            #li
-            #links = soup.find_all('a',string=re.compile(key,re.IGNORECASE))
-            #stripped = re.sub('<[^<]+?>','',txt)
-            #print(stripped)
-            #kern = html.fromstring(r.content)
-            #for link in kern.xpath("//span[contains(@class,'one-click-content')]"):
-            #    if link.text:
-            #        l = link.text.strip()
-            #        print(textwrap.fill(s))
-            #print(kern)
-            #print(txt)
-            #print(soup.prettify())
-            #links = soup.find_all()
-            #for link in links:
-            #    print(link)
-            
-
-
-
-
 
 ## Problem 2
-#Use BeautifulSoup to collect and process the articles contents. Save each article content to a file.
+#Use BeautifulSoup to collect and process the articles contents. 
+# Save each article content to a file.
+for key in link_dict:
+    for url in link_dict[key]:
+        try:
+            res = requests.get(url,stream=True)
+            res.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+        else:
+            txt = res.text
+            soup = BeautifulSoup(txt, features='lxml')
+            print(soup.title.get_text())
+            text_blocks = soup.find_all(attrs={"data-component":"text-block"})
+            for text in text_blocks:
+                #text = text.select('p')
+                text = text.get_text()
+                print(text)
+            break
+    break
 
 ## Problem 3
 
