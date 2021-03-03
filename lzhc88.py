@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from lxml import html
 import textwrap
 import re
+import os
 ##python version 3.8
 ## Problem 1
 #Python program that downloads the webpage content (from BBC news)
@@ -69,8 +70,20 @@ print(num_articles)
 ## Problem 2
 #Use BeautifulSoup to collect and process the articles contents. 
 # Save each article content to a file.
+#
+#First create directory in current working directory to store the files
+cur_dir = os.path.dirname(os.path.abspath(__file__))
+new_dir = "articles"
+path = os.path.join(cur_dir,new_dir)
+try:
+    os.makedirs(path,exist_ok = True)
+except OSError as error:
+    print("The directory 'articles' could not be created.")
+
 for key in link_dict:
+    i=0
     for url in link_dict[key]:
+        i+=1
         try:
             res = requests.get(url,stream=True)
             res.raise_for_status()
@@ -79,16 +92,34 @@ for key in link_dict:
         except Exception as err:
             print(f'Other error occurred: {err}')
         else:
+            #Get the text component of the website
             txt = res.text
             soup = BeautifulSoup(txt, features='lxml')
-            print(soup.title.get_text())
+            #Get title
+            #print(soup.title.get_text())
+            #Extract only the article content
             text_blocks = soup.find_all(attrs={"data-component":"text-block"})
-            for text in text_blocks:
-                #text = text.select('p')
-                text = text.get_text()
-                print(text)
-            break
-    break
+            #Create new text file to store the article
+            filename=key+" "+str(i)+".txt"
+            path_file = os.path.join(path,filename)
+            with open(path_file,'w',encoding='utf8',errors='ignore') as f:
+                #Write the title into the text file
+                f.write(soup.title.get_text()+"\n")
+                #Then write the whole textblock into the file
+                for text in text_blocks:
+                    #text = text.select('p')
+                    text = text.get_text()
+                    #txt = text.encode(formatter="html")
+                    #text=text.prettify(formatter="html")##Fehleranzeige
+                    #print(text)
+                    #txt = text.encode('utf-8','ignore').decode('utf-8')
+                    #print(text)
+                    #print(txt)
+                    f.write(text+"\n")
+                    #print(text)
+            
+    
+    
 
 ## Problem 3
 
