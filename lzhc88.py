@@ -88,6 +88,7 @@ for element in link_dict:
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 new_dir = "articles"
 path = os.path.join(cur_dir,new_dir)
+
 try:
     os.makedirs(path,exist_ok = True)
 except OSError as error:
