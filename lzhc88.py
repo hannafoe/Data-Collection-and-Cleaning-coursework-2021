@@ -27,7 +27,7 @@ def try_url(url):
         print("success")
         return True
 
-def check_if_word_in_website(url,word):
+def check_if_word_in_article(url,word):
     try:
         res = requests.get(url,stream=True)
         res.raise_for_status()
@@ -47,6 +47,30 @@ def check_if_word_in_website(url,word):
             text = text.get_text()
             if word in text:
                 return True
+def check_if_word_in_wikipedia_website(url,word):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        count = soup.get_text().count(word)
+        if len(word.split())>1:
+            print(word.split())
+            for split_word in word.split():
+                partly_similar= soup.get_text().count(split_word)
+                partly_similar/=4
+                count+=partly_similar
+        return count
+        #if word in soup.get_text():
+        #    count+=1
+            
+        
 
 def write_urltext_into_file(url,path,i):
     try:
@@ -128,7 +152,7 @@ for key in keywords:
                     #THIS METHOD TAKES A LONG TIME AND IS NOT THAT HELPFUL: SO DECIDED TO TAKE IT OUT
                     #if not keyInHeader:
                     #    for word in key_split:
-                    #        if check_if_word_in_website(link,word) ==True:
+                    #        if check_if_word_in_article(link,word) ==True:
                     #            relevant_url=True
                     #            break
                     relevant_url=True
@@ -218,27 +242,43 @@ print(corr_matrix)
 #is in the related searches
 url_google = 'https://www.google.com/search'
 url_wikipedia = 'https://en.wikipedia.org/wiki/'
+corr_matrix_2 = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+i=0
 for key in keywords:
-    try:
-        r = requests.get(url_wikipedia+key)
-        r.raise_for_status()
-    except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')
-    except Exception as err:
-        print(f'Other error occurred: {err}')
-    else:
-        print(r.url)
-        txt = r.text
-        soup = BeautifulSoup(txt, features='lxml')
-        for other_key in keywords:
-            if key == other_key:
-                continue
-            else:
-                key_in_wikipedia = check_if_word_in_website(link,other_key)
-                print(key_in_wikipedia)
+    j=0
+    for other_key in keywords:
+        if key == other_key:
+            corr_matrix_2[i][j]=-1
+        else:
+            key_in_wikipedia = check_if_word_in_wikipedia_website(url_wikipedia+key,other_key)
+            print(key_in_wikipedia)
+            corr_matrix_2[i][j]=key_in_wikipedia
+        j+=1
+    i+=1
+    break
+print(corr_matrix_2)
+    
+'''
+try:
+    r = requests.get(url_wikipedia+key)
+    r.raise_for_status()
+except HTTPError as http_err:
+    print(f'HTTP error occurred: {http_err}')
+except Exception as err:
+    print(f'Other error occurred: {err}')
+else:
+    print(r.url)
+    txt = r.text
+    soup = BeautifulSoup(txt, features='lxml')
+    for other_key in keywords:
+        if key == other_key:
+            continue
+        else:
+            key_in_wikipedia = check_if_word_in_website(link,other_key)
+            print(key_in_wikipedia)'''
 
                 
-    break        
+       
 
 ## Problem 4
 

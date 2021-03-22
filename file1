@@ -1,0 +1,246 @@
+Targeted threat - Wikipedia
+
+
+
+Targeted threat - Wikipedia
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Targeted threat
+
+From Wikipedia, the free encyclopedia
+
+
+
+Jump to navigation
+Jump to search
+Targeted threats are a class of malware destined for one specific organization or industry.  A type of crimeware, these threats are of particular concern because they are designed to capture sensitive information.  Targeted attacks may include threats delivered via SMTP e-mail, port attacks, zero day attack vulnerability exploits or phishing messages.  Government organisations are the most targeted sector.[1]  Financial industries are the second most targeted sector, most likely because cybercriminals desire to profit from the confidential, sensitive information the financial industry IT infrastructure houses.[2] Similarly, online brokerage accounts have also been targeted by such attacks.[3]
+
+Contents
+
+1 Impact
+2 Detection and prevention
+3 Examples
+4 External links
+5 Notes
+
+
+Impact[edit]
+The impact of targeted attacks can be far-reaching.  In addition to regulatory sanctions imposed by HIPAA, Sarbanes-Oxley, the Gramm-Leach-Bliley Act and other laws, they can lead to the loss of revenue, focus and corporate momentum.  They not only expose sensitive customer data, but damage corporate reputations and incur potential lawsuits.[4]
+
+Detection and prevention[edit]
+In contrast to a widespread spam attack, which are widely noticed, because targeted attacks are only sent to a limited number of organizations, these crimeware threats tend to not be reported and thus elude malware scanners.[5]
+
+Heuristics
+Multiple-layered pattern scanning
+Traffic-origin scanning.  Targets known bad locations or traffic anomalies.
+Behavior observation.  Including desktop emulator solutions and virtual machine behavior analysis.
+Examples[edit]
+In one instance, Trojan horses were used as a targeted threat so that Israeli companies could conduct corporate espionage on each other.[6]
+The Hotword Trojan, the Ginwui and the PPDropper Trojans are additional examples of Trojans used for corporate espionage.[7]
+Targeted destination attacks use harvested IP addresses to send messages directly to recipients without an MX record lookup.  It aims for specific sites and users by defeating hosted protection services and internal gateways to deliver e-mail with malicious payloads.[8]
+External links[edit]
+An analysis of Targeted Attacks
+Notes[edit]
+
+^ http://www.symantec.com/connect/blogs/targeted-attacks-now-using-bredolab-malware
+
+^ Symantec Corp., Symantec Internet Security Threat Report, Vol X, Sep. 2006, p. 9.
+
+^ Security and Exchange Commission. "Online Brokerage Accounts: What You Can Do to Safeguard Your Money and Your Personal Information." https://www.sec.gov/investor/pubs/onlinebrokerage.htm
+
+^ Williams, Amrit T., Hallawell, Arabella, et al., "Hype Cycle for Cyberthreats, 2006", Gartner, Inc., Sept. 13, 2006, p. 17
+
+^ Shipp, Alex quoted in Gibbs, Wayt. "The Rise of Crimeware.", February 23, 2006. "Archived copy". Archived from the original on 2006-12-06. Retrieved 2006-11-28.CS1 maint: archived copy as title (link)
+
+^ Williams, Dan. "Israel holds couple in corporate espionage case." "http://www.computerworld.com/securitytopics/security/virus/story/0,10801,108225,00.html?from=story_kc, Jan. 31, 2006
+
+^ Symantec Corp., Symantec Internet Security Threat Report, Vol X, Sep. 2006, p. 4.
+
+^ Avinti, Inc. "Targeted Destination Attacks." Sep. 2005. "Archived copy" (PDF). Archived from the original (PDF) on 2012-02-15. Retrieved 2006-11-28.CS1 maint: archived copy as title (link)
+
+
+
+
+
+
+Retrieved from "https://en.wikipedia.org/w/index.php?title=Targeted_threat&oldid=918809654"
+Categories: Types of malwareHidden categories: CS1 maint: archived copy as title
+
+
+
+
+
+
+Navigation menu
+
+
+
+
+Personal tools
+
+
+Not logged inTalkContributionsCreate accountLog in
+
+
+
+
+
+
+Namespaces
+
+
+ArticleTalk
+
+
+
+
+
+
+Variants
+
+
+
+
+
+
+
+
+
+
+Views
+
+
+ReadEditView history
+
+
+
+
+
+
+More
+
+
+
+
+
+
+
+Search
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Navigation
+
+
+Main pageContentsCurrent eventsRandom articleAbout WikipediaContact usDonate
+
+
+
+
+
+Contribute
+
+
+HelpLearn to editCommunity portalRecent changesUpload file
+
+
+
+
+
+Tools
+
+
+What links hereRelated changesUpload fileSpecial pagesPermanent linkPage informationCite this pageWikidata item
+
+
+
+
+
+Print/export
+
+
+Download as PDFPrintable version
+
+
+
+
+
+Languages
+
+
+日本語
+Edit links
+
+
+
+
+
+
+ This page was last edited on 30 September 2019, at 11:49 (UTC).
+Text is available under the Creative Commons Attribution-ShareAlike License;
+additional terms may apply.  By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+
+
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Mobile view
+Developers
+Statistics
+Cookie statement
+
+
+
+
+
+
+
+
+
+
