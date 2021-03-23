@@ -298,7 +298,17 @@ for i in range(len(corr_matrix_2)):
 
 for i in cosine_sim_correlation_2:
     print(i)
-'''
+'''    
+for i in range(len(cosine_sim_correlation_2)):
+    norm_x =0
+    for j in range(len(cosine_sim_correlation_2)):
+        norm_x += cosine_sim_correlation_2[i][j]**2
+    for j in range(len(cosine_sim_correlation_2)):
+        cosine_sim_correlation_2[i][j]/=norm_x
+
+for i in cosine_sim_correlation_2:
+    print(i)
+
 try:
     r = requests.get(url_wikipedia+key)
     r.raise_for_status()
