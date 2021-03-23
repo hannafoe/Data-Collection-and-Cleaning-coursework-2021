@@ -238,6 +238,7 @@ for key in keywords:
                         #print(other+" in txt")
                         corr_matrix[i][j]+=1
 print(corr_matrix)
+corr_matrix_pearson = corr_matrix.copy()
 corr_matrix3 = corr_matrix.copy()
 for i in range(len(corr_matrix)):
     for j in range(len(corr_matrix)):
@@ -269,7 +270,51 @@ for i in cosine_sim_correlation:
     print(i)
 #print(cosine_sim_correlation)
         
-    
+data_pearson = pd.DataFrame({
+    'Keywords':keywords,
+    'targeted threat':[corr_matrix_pearson[i][0] for i in range(len(corr_matrix_pearson))],
+    'Advanced Persistent Threat':[corr_matrix_pearson[i][1] for i in range(len(corr_matrix_pearson))],
+    'phishing':[corr_matrix_pearson[i][2] for i in range(len(corr_matrix_pearson))],
+    'DoS attack':[corr_matrix_pearson[i][3] for i in range(len(corr_matrix_pearson))],
+    'malware':[corr_matrix_pearson[i][4] for i in range(len(corr_matrix_pearson))],
+    'computer virus':[corr_matrix_pearson[i][5] for i in range(len(corr_matrix_pearson))],
+    'spyware':[corr_matrix_pearson[i][6] for i in range(len(corr_matrix_pearson))],
+    'malicious bot':[corr_matrix_pearson[i][7] for i in range(len(corr_matrix_pearson))],
+    'ransomware':[corr_matrix_pearson[i][8] for i in range(len(corr_matrix_pearson))],
+    'encryption':[corr_matrix_pearson[i][9] for i in range(len(corr_matrix_pearson))]
+})
+
+corr_matrix_pearson = data_pearson.corr(method='pearson')   
+corr_matrix_pearson_abs = np.abs(corr_matrix_pearson)
+print(corr_matrix_pearson_abs)
+data1 = pd.DataFrame({
+    'Keywords':keywords,
+    'targeted threat':[cosine_sim_correlation[i][0] for i in range(len(cosine_sim_correlation))],
+    'Advanced Persistent Threat':[cosine_sim_correlation[i][1] for i in range(len(cosine_sim_correlation))],
+    'phishing':[cosine_sim_correlation[i][2] for i in range(len(cosine_sim_correlation))],
+    'DoS attack':[cosine_sim_correlation[i][3] for i in range(len(cosine_sim_correlation))],
+    'malware':[cosine_sim_correlation[i][4] for i in range(len(cosine_sim_correlation))],
+    'computer virus':[cosine_sim_correlation[i][5] for i in range(len(cosine_sim_correlation))],
+    'spyware':[cosine_sim_correlation[i][6] for i in range(len(cosine_sim_correlation))],
+    'malicious bot':[cosine_sim_correlation[i][7] for i in range(len(cosine_sim_correlation))],
+    'ransomware':[cosine_sim_correlation[i][8] for i in range(len(cosine_sim_correlation))],
+    'encryption':[cosine_sim_correlation[i][9] for i in range(len(cosine_sim_correlation))]
+})
+
+#plt.figure(figsize=(8,8))
+plt,axs = plt.subplots(1,2)
+sns.heatmap(corr_matrix_pearson_abs,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+sns.heatmap(data1,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+plt.tight_layout()
+plt.show()
+'''
+plt.figure(figsize=(5,5))
+plt.imshow(corr_matrix_pearson_abs, cmap='RdYlGn', interpolation='none', aspect='auto')
+plt.colorbar()
+plt.xticks(range(len(corr_matrix_pearson_abs)), corr_matrix_pearson_abs.columns, rotation='vertical')
+plt.yticks(range(len(corr_matrix_pearson_abs)), corr_matrix_pearson_abs.columns)
+plt.suptitle('Pearson Correlation Heat Map (absolute values)', fontsize=15, fontweight='bold')
+plt.show()
     
 
 #Work with google searches
@@ -303,34 +348,6 @@ for i in range(len(corr_matrix_2)):
 
 for i in cosine_sim_correlation_2:
     print(i)
-'''    
-for i in range(len(cosine_sim_correlation_2)):
-    norm_x =0
-    for j in range(len(cosine_sim_correlation_2)):
-        norm_x += cosine_sim_correlation_2[i][j]**2
-    for j in range(len(cosine_sim_correlation_2)):
-        cosine_sim_correlation_2[i][j]/=norm_x
-
-for i in cosine_sim_correlation_2:
-    print(i)
-
-try:
-    r = requests.get(url_wikipedia+key)
-    r.raise_for_status()
-except HTTPError as http_err:
-    print(f'HTTP error occurred: {http_err}')
-except Exception as err:
-    print(f'Other error occurred: {err}')
-else:
-    print(r.url)
-    txt = r.text
-    soup = BeautifulSoup(txt, features='lxml')
-    for other_key in keywords:
-        if key == other_key:
-            continue
-        else:
-            key_in_wikipedia = check_if_word_in_website(link,other_key)
-            print(key_in_wikipedia)'''
 
 ##Save results of algorithm in distance.xlsx 
 # First make my matrix into a dictionary
@@ -370,7 +387,8 @@ data1 = pd.DataFrame({
 
 data1.to_excel(writer, sheet_name='Sheet1', index=False)
 writer.save()
-
+'''
 ## Problem 4
-
-
+df1 = pd.read_excel('./distance1.xlsx')
+df2 = pd.read_excel('./distance2.xlsx')
+#sns.pairplot(data=df1,hue='Keywords')
