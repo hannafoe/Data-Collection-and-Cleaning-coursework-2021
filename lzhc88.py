@@ -5,6 +5,11 @@ from lxml import html
 import textwrap
 import re
 import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import xlsxwriter
 ##python version 3.8
 #reusable functions and variables
 keywords = ['targeted threat','Advanced Persistent Threat',
@@ -327,8 +332,44 @@ else:
             key_in_wikipedia = check_if_word_in_website(link,other_key)
             print(key_in_wikipedia)'''
 
-                
-       
+##Save results of algorithm in distance.xlsx 
+# First make my matrix into a dictionary
+# Then convert python dictionary into pandas dataframe
+#
+writer = pd.ExcelWriter('./distance1.xlsx',engine='xlsxwriter')
+data1 = pd.DataFrame({
+    'Keywords':keywords,
+    'targeted threat':[cosine_sim_correlation[i][0] for i in range(len(cosine_sim_correlation))],
+    'Advanced Persistent Threat':[cosine_sim_correlation[i][1] for i in range(len(cosine_sim_correlation))],
+    'phishing':[cosine_sim_correlation[i][2] for i in range(len(cosine_sim_correlation))],
+    'DoS attack':[cosine_sim_correlation[i][3] for i in range(len(cosine_sim_correlation))],
+    'malware':[cosine_sim_correlation[i][4] for i in range(len(cosine_sim_correlation))],
+    'computer virus':[cosine_sim_correlation[i][5] for i in range(len(cosine_sim_correlation))],
+    'spyware':[cosine_sim_correlation[i][6] for i in range(len(cosine_sim_correlation))],
+    'malicious bot':[cosine_sim_correlation[i][7] for i in range(len(cosine_sim_correlation))],
+    'ransomware':[cosine_sim_correlation[i][8] for i in range(len(cosine_sim_correlation))],
+    'encryption':[cosine_sim_correlation[i][9] for i in range(len(cosine_sim_correlation))]
+})
+
+data1.to_excel(writer, sheet_name='Sheet1', index=False)
+writer.save()
+writer = pd.ExcelWriter('./distance2.xlsx',engine='xlsxwriter')
+data1 = pd.DataFrame({
+    'Keywords':keywords,
+    'targeted threat':[cosine_sim_correlation_2[i][0] for i in range(len(cosine_sim_correlation_2))],
+    'Advanced Persistent Threat':[cosine_sim_correlation_2[i][1] for i in range(len(cosine_sim_correlation_2))],
+    'phishing':[cosine_sim_correlation_2[i][2] for i in range(len(cosine_sim_correlation_2))],
+    'DoS attack':[cosine_sim_correlation_2[i][3] for i in range(len(cosine_sim_correlation_2))],
+    'malware':[cosine_sim_correlation_2[i][4] for i in range(len(cosine_sim_correlation_2))],
+    'computer virus':[cosine_sim_correlation_2[i][5] for i in range(len(cosine_sim_correlation_2))],
+    'spyware':[cosine_sim_correlation_2[i][6] for i in range(len(cosine_sim_correlation_2))],
+    'malicious bot':[cosine_sim_correlation_2[i][7] for i in range(len(cosine_sim_correlation_2))],
+    'ransomware':[cosine_sim_correlation_2[i][8] for i in range(len(cosine_sim_correlation_2))],
+    'encryption':[cosine_sim_correlation_2[i][9] for i in range(len(cosine_sim_correlation_2))]
+})
+
+data1.to_excel(writer, sheet_name='Sheet1', index=False)
+writer.save()
 
 ## Problem 4
 
