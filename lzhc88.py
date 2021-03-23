@@ -60,12 +60,13 @@ def check_if_word_in_wikipedia_website(url,word):
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         count = soup.get_text().count(word)
+        '''
         if len(word.split())>1:
-            print(word.split())
+            #print(word.split())
             for split_word in word.split():
                 partly_similar= soup.get_text().count(split_word)
                 partly_similar/=4
-                count+=partly_similar
+                count+=partly_similar'''
         return count
         #if word in soup.get_text():
         #    count+=1
@@ -193,7 +194,7 @@ for key in link_dict:
     for url in link_dict[key]:
         i+=1
         write_urltext_into_file(url,path,i)    
-
+'''
 ## Problem 3
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
@@ -205,6 +206,12 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 new_dir = "articles"
 path = os.path.join(cur_dir,new_dir)
 #Search for the other keywords in the articles
+#If other keyword is mentioned in article of one key, then increase distance by 1
+#In the case of perfect matching, the other keyword is found in all 100 articles of one key
+#Then distance=100
+#
+#Later divide distance in correlation matrix by number of articles found.
+#e.g. if there are 100 articles for keyword i and 5 articles with keyword j in it, then the distance(i,j)=5/100
 corr_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 i=-1
 k=0
@@ -222,11 +229,11 @@ for key in keywords:
                     j+=1
                     f.seek(0)
                     #print(key)
-                    if other!=current and other in f.read():
+                    if other in f.read():
                         #print(other+" in txt")
                         corr_matrix[i][j]+=1
 print(corr_matrix)
-
+corr_matrix3 = corr_matrix.copy()
 for i in range(len(corr_matrix)):
     for j in range(len(corr_matrix)):
         if i==j:
@@ -236,28 +243,61 @@ for i in range(len(corr_matrix)):
                 corr_matrix[i][j]=corr_matrix[i][j]/num_articles[i]
 print(num_articles)
 print(corr_matrix)
-'''
+def cosine_similarity(x,y):#x,y lists
+    xy=0
+    x_norm=0
+    y_norm=0
+    for i in range(len(x)):
+        xy += x[i]*y[i]
+        x_norm+=x[i]**2
+        y_norm+=y[i]**2
+    sim_xy = xy/(x_norm*y_norm)
+    return sim_xy
+cosine_sim_correlation=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+for i in range(len(corr_matrix)):
+    x = corr_matrix3[i]
+    for j in range(len(corr_matrix3)):
+        y=corr_matrix3[j]
+        cosine_sim_correlation[i][j]=cosine_similarity(x,y)
+
+for i in cosine_sim_correlation:
+    print(i)
+#print(cosine_sim_correlation)
+        
+    
+    
+
 #Work with google searches
 #Extract the related searches and look if one of the other keywords
 #is in the related searches
 url_google = 'https://www.google.com/search'
+#Work with wikipedia articles
+#Find how often the other key words are mentioned in the wikipedia articles
 url_wikipedia = 'https://en.wikipedia.org/wiki/'
 corr_matrix_2 = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 i=0
 for key in keywords:
+    if key=='malicious bot':
+        key = 'internet bot'
     j=0
     for other_key in keywords:
-        if key == other_key:
-            corr_matrix_2[i][j]=-1
-        else:
-            key_in_wikipedia = check_if_word_in_wikipedia_website(url_wikipedia+key,other_key)
-            print(key_in_wikipedia)
-            corr_matrix_2[i][j]=key_in_wikipedia
+        key_in_wikipedia = check_if_word_in_wikipedia_website(url_wikipedia+key,other_key)
+        #print(key_in_wikipedia)
+        corr_matrix_2[i][j]=key_in_wikipedia
         j+=1
     i+=1
-    break
+#To calculate the distance of keywords i and j
 print(corr_matrix_2)
-    
+
+cosine_sim_correlation_2=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+for i in range(len(corr_matrix_2)):
+    x = corr_matrix_2[i]
+    for j in range(len(corr_matrix_2)):
+        y=corr_matrix_2[j]
+        cosine_sim_correlation_2[i][j]=cosine_similarity(x,y)
+
+for i in cosine_sim_correlation_2:
+    print(i)
 '''
 try:
     r = requests.get(url_wikipedia+key)
