@@ -238,17 +238,19 @@ for key in keywords:
                         #print(other+" in txt")
                         corr_matrix[i][j]+=1
 print(corr_matrix)
+corr_matrix_1 = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 corr_matrix_pearson = corr_matrix.copy()
 corr_matrix3 = corr_matrix.copy()
 for i in range(len(corr_matrix)):
     for j in range(len(corr_matrix)):
         if i==j:
-            corr_matrix[i][j]=1
+            corr_matrix_1[i][j]=1
         else:
-            if corr_matrix[i][j]!=0:
-                corr_matrix[i][j]=corr_matrix[i][j]/num_articles[i]
+            if corr_matrix_1[i][j]!=0:
+                corr_matrix_1[i][j]=corr_matrix[i][j]/num_articles[i]
 print(num_articles)
 print(corr_matrix)
+
 def cosine_similarity(x,y):#x,y lists
     xy=0
     x_norm=0
@@ -259,6 +261,10 @@ def cosine_similarity(x,y):#x,y lists
         y_norm+=y[i]**2
     sim_xy = xy/(x_norm*y_norm)
     return sim_xy
+
+print(corr_matrix_pearson)
+print(corr_matrix3)
+
 cosine_sim_correlation=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 for i in range(len(corr_matrix)):
     x = corr_matrix3[i]
@@ -269,9 +275,10 @@ for i in range(len(corr_matrix)):
 for i in cosine_sim_correlation:
     print(i)
 #print(cosine_sim_correlation)
-        
+for i in corr_matrix_pearson:
+    print(i)
 data_pearson = pd.DataFrame({
-    'Keywords':keywords,
+    #'Keywords':keywords,
     'targeted threat':[corr_matrix_pearson[i][0] for i in range(len(corr_matrix_pearson))],
     'Advanced Persistent Threat':[corr_matrix_pearson[i][1] for i in range(len(corr_matrix_pearson))],
     'phishing':[corr_matrix_pearson[i][2] for i in range(len(corr_matrix_pearson))],
@@ -283,12 +290,12 @@ data_pearson = pd.DataFrame({
     'ransomware':[corr_matrix_pearson[i][8] for i in range(len(corr_matrix_pearson))],
     'encryption':[corr_matrix_pearson[i][9] for i in range(len(corr_matrix_pearson))]
 })
-
-corr_matrix_pearson = data_pearson.corr(method='pearson')   
-corr_matrix_pearson_abs = np.abs(corr_matrix_pearson)
-print(corr_matrix_pearson_abs)
+print(data_pearson)
+corr_pearson = data_pearson.corr(method='pearson')   
+corr_pearson_abs = np.abs(corr_pearson)
+print(corr_pearson_abs)
 data1 = pd.DataFrame({
-    'Keywords':keywords,
+    #'Keywords':keywords,
     'targeted threat':[cosine_sim_correlation[i][0] for i in range(len(cosine_sim_correlation))],
     'Advanced Persistent Threat':[cosine_sim_correlation[i][1] for i in range(len(cosine_sim_correlation))],
     'phishing':[cosine_sim_correlation[i][2] for i in range(len(cosine_sim_correlation))],
@@ -302,9 +309,9 @@ data1 = pd.DataFrame({
 })
 
 #plt.figure(figsize=(8,8))
-plt,axs = plt.subplots(1,2)
-sns.heatmap(corr_matrix_pearson_abs,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
-sns.heatmap(data1,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+#plt,axs = plt.subplots(1,2)
+sns.heatmap(corr_pearson_abs,cmap='BrBG',annot=True,annot_kws={'size':6})#,ax=axs[0])
+#sns.heatmap(data1,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
 plt.tight_layout()
 plt.show()
 '''
