@@ -10,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import xlsxwriter
+from statistics import mean
 ##python version 3.8
 #reusable functions and variables
 keywords = ['targeted threat','Advanced Persistent Threat',
@@ -238,16 +239,13 @@ for key in keywords:
                         #print(other+" in txt")
                         corr_matrix[i][j]+=1
 print(corr_matrix)
-corr_matrix_1 = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-corr_matrix_pearson = corr_matrix.copy()
-corr_matrix3 = corr_matrix.copy()
 for i in range(len(corr_matrix)):
     for j in range(len(corr_matrix)):
         if i==j:
-            corr_matrix_1[i][j]=1
+            corr_matrix[i][j]=1
         else:
-            if corr_matrix_1[i][j]!=0:
-                corr_matrix_1[i][j]=corr_matrix[i][j]/num_articles[i]
+            if corr_matrix[i][j]!=0:
+                corr_matrix[i][j]=corr_matrix[i][j]/num_articles[i]
 print(num_articles)
 print(corr_matrix)
 
@@ -255,40 +253,49 @@ def cosine_similarity(x,y):#x,y lists
     xy=0
     x_norm=0
     y_norm=0
+    
     for i in range(len(x)):
         xy += x[i]*y[i]
         x_norm+=x[i]**2
         y_norm+=y[i]**2
     sim_xy = xy/(x_norm*y_norm)
     return sim_xy
+def pearson(x,y):#x,y lists
+    cov=0
+    std_x=0
+    std_y=0
+    x_mean = mean(x)
+    y_mean = mean(y)
+    for i in range(len(x)):
+        cov += (x[i]-x_mean)*(y[i]-y_mean)
+        std_x +=(x[i]-x_mean)**2
+        std_y += (y[i]-y_mean)**2
+    pearson_xy = xy/((std_x*std_y)**0.5)
+    return pearson_xy
 
-print(corr_matrix_pearson)
-print(corr_matrix3)
 
 cosine_sim_correlation=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 for i in range(len(corr_matrix)):
-    x = corr_matrix3[i]
-    for j in range(len(corr_matrix3)):
-        y=corr_matrix3[j]
+    x = corr_matrix[i]
+    for j in range(len(corr_matrix)):
+        y=corr_matrix[j]
         cosine_sim_correlation[i][j]=cosine_similarity(x,y)
 
 for i in cosine_sim_correlation:
     print(i)
-#print(cosine_sim_correlation)
-for i in corr_matrix_pearson:
-    print(i)
+
 data_pearson = pd.DataFrame({
     #'Keywords':keywords,
-    'targeted threat':[corr_matrix_pearson[i][0] for i in range(len(corr_matrix_pearson))],
-    'Advanced Persistent Threat':[corr_matrix_pearson[i][1] for i in range(len(corr_matrix_pearson))],
-    'phishing':[corr_matrix_pearson[i][2] for i in range(len(corr_matrix_pearson))],
-    'DoS attack':[corr_matrix_pearson[i][3] for i in range(len(corr_matrix_pearson))],
-    'malware':[corr_matrix_pearson[i][4] for i in range(len(corr_matrix_pearson))],
-    'computer virus':[corr_matrix_pearson[i][5] for i in range(len(corr_matrix_pearson))],
-    'spyware':[corr_matrix_pearson[i][6] for i in range(len(corr_matrix_pearson))],
-    'malicious bot':[corr_matrix_pearson[i][7] for i in range(len(corr_matrix_pearson))],
-    'ransomware':[corr_matrix_pearson[i][8] for i in range(len(corr_matrix_pearson))],
-    'encryption':[corr_matrix_pearson[i][9] for i in range(len(corr_matrix_pearson))]
+    'targeted threat':[corr_matrix[i][0] for i in range(len(corr_matrix))],
+    'Advanced Persistent Threat':[corr_matrix[i][1] for i in range(len(corr_matrix))],
+    'phishing':[corr_matrix[i][2] for i in range(len(corr_matrix))],
+    'DoS attack':[corr_matrix[i][3] for i in range(len(corr_matrix))],
+    'malware':[corr_matrix[i][4] for i in range(len(corr_matrix))],
+    'computer virus':[corr_matrix[i][5] for i in range(len(corr_matrix))],
+    'spyware':[corr_matrix[i][6] for i in range(len(corr_matrix))],
+    'malicious bot':[corr_matrix[i][7] for i in range(len(corr_matrix))],
+    'ransomware':[corr_matrix[i][8] for i in range(len(corr_matrix))],
+    'encryption':[corr_matrix[i][9] for i in range(len(corr_matrix))]
 })
 print(data_pearson)
 corr_pearson = data_pearson.corr(method='pearson')   
@@ -309,10 +316,10 @@ data1 = pd.DataFrame({
 })
 
 #plt.figure(figsize=(8,8))
-#plt,axs = plt.subplots(1,2)
-sns.heatmap(corr_pearson_abs,cmap='BrBG',annot=True,annot_kws={'size':6})#,ax=axs[0])
-#sns.heatmap(data1,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
-plt.tight_layout()
+fig,axs = plt.subplots(1,2)
+sns.heatmap(corr_pearson_abs,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+sns.heatmap(data1,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+#fig.tight_layout()
 plt.show()
 '''
 plt.figure(figsize=(5,5))
