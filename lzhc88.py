@@ -240,7 +240,7 @@ for key in keywords:
                         #print(other+" in txt")
                         corr_matrix[i][j]+=1
 print(corr_matrix)
-#corr_matrix_original = copy.deepcopy(corr_matrix)
+corr_matrix_original = copy.deepcopy(corr_matrix)
 for i in range(len(corr_matrix)):
     for j in range(len(corr_matrix)):
         if i==j:
@@ -248,20 +248,9 @@ for i in range(len(corr_matrix)):
         else:
             if corr_matrix[i][j]!=0:
                 corr_matrix[i][j]=corr_matrix[i][j]/num_articles[i]
-print(num_articles)
-print(corr_matrix)
+#print(num_articles)
+#print(corr_matrix)
 
-def cosine_similarity(x,y):#x,y lists
-    xy=0
-    x_norm=0
-    y_norm=0
-    
-    for i in range(len(x)):
-        xy += x[i]*y[i]
-        x_norm+=x[i]**2
-        y_norm+=y[i]**2
-    sim_xy = xy/(x_norm*y_norm)
-    return sim_xy
 def pearson(x,y):#x,y lists
     cov=0
     std_x=0
@@ -277,8 +266,18 @@ def pearson(x,y):#x,y lists
     else:
         pearson_xy = cov/((std_x*std_y)**0.5)
     return pearson_xy
+def cosine_similarity(x,y):#x,y lists
+    xy=0
+    x_norm=0
+    y_norm=0
+    for i in range(len(x)):
+        xy += x[i]*y[i]
+        x_norm+=x[i]**2
+        y_norm+=y[i]**2
+    sim_xy = xy/(x_norm*y_norm)
+    return sim_xy
 #####################################################################################
-#Calculate correlation between the appearance of each word in article of other keys
+#Calculate correlation between the appearance of each word in article of each key
 art_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 for i in range(len(corr_matrix)):
     x = corr_matrix_original[i]
@@ -302,18 +301,6 @@ data_art_word_corr = pd.DataFrame({
 })
 
 ############################################################################
-cosine_sim_correlation=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-for i in range(len(corr_matrix)):
-    x = corr_matrix[i]
-    #With x as follows, we get the same pearson correlation matrix as in the dataframe
-    #x = [corr_matrix[l][i] for l in range(len(corr_matrix))]
-    for j in range(len(corr_matrix)):
-        y=[corr_matrix[l][j] for l in range(len(corr_matrix))]
-        cosine_sim_correlation[i][j]=pearson(x,y)
-
-for i in cosine_sim_correlation:
-    print(i)
-
 
 data_pearson = pd.DataFrame({
     #'Keywords':keywords,
@@ -328,44 +315,22 @@ data_pearson = pd.DataFrame({
     'ransomware':[corr_matrix[i][8] for i in range(len(corr_matrix))],
     'encryption':[corr_matrix[i][9] for i in range(len(corr_matrix))]
 })
-print(data_pearson)
-corr_pearson = data_pearson.corr(method='pearson')  
-print(corr_pearson) 
-#corr_pearson_abs = np.abs(corr_pearson)
-data1 = pd.DataFrame({
-    #'Keywords':keywords,
-    'targeted threat':[cosine_sim_correlation[i][0] for i in range(len(cosine_sim_correlation))],
-    'Advanced Persistent Threat':[cosine_sim_correlation[i][1] for i in range(len(cosine_sim_correlation))],
-    'phishing':[cosine_sim_correlation[i][2] for i in range(len(cosine_sim_correlation))],
-    'DoS attack':[cosine_sim_correlation[i][3] for i in range(len(cosine_sim_correlation))],
-    'malware':[cosine_sim_correlation[i][4] for i in range(len(cosine_sim_correlation))],
-    'computer virus':[cosine_sim_correlation[i][5] for i in range(len(cosine_sim_correlation))],
-    'spyware':[cosine_sim_correlation[i][6] for i in range(len(cosine_sim_correlation))],
-    'malicious bot':[cosine_sim_correlation[i][7] for i in range(len(cosine_sim_correlation))],
-    'ransomware':[cosine_sim_correlation[i][8] for i in range(len(cosine_sim_correlation))],
-    'encryption':[cosine_sim_correlation[i][9] for i in range(len(cosine_sim_correlation))]
-})
+corr_pearson = data_pearson.corr(method='pearson')
 
 #plt.figure(figsize=(8,8))
 fig,axs = plt.subplots(1,2)
-sns.heatmap(data_art_word_corr,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
-sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+sns.heatmap(data_art_word_corr,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
 #fig.tight_layout()
+plt.suptitle('Pearson Correlation Heat Map', fontsize=15, fontweight='bold')
 plt.show()
-'''
-plt.figure(figsize=(5,5))
-plt.imshow(corr_matrix_pearson_abs, cmap='RdYlGn', interpolation='none', aspect='auto')
-plt.colorbar()
-plt.xticks(range(len(corr_matrix_pearson_abs)), corr_matrix_pearson_abs.columns, rotation='vertical')
-plt.yticks(range(len(corr_matrix_pearson_abs)), corr_matrix_pearson_abs.columns)
-plt.suptitle('Pearson Correlation Heat Map (absolute values)', fontsize=15, fontweight='bold')
-plt.show()
-  
 
+############################################################################################################
 #Work with google searches
 #Extract the related searches and look if one of the other keywords
 #is in the related searches
 url_google = 'https://www.google.com/search'
+###############################################################################################################
 #Work with wikipedia articles
 #Find how often the other key words are mentioned in the wikipedia articles
 url_wikipedia = 'https://en.wikipedia.org/wiki/'
@@ -381,18 +346,32 @@ for key in keywords:
         corr_matrix_2[i][j]=key_in_wikipedia
         j+=1
     i+=1
-#To calculate the distance of keywords i and j
+#################################
+#Calculate correlation between the number of appearances of each word in wikipedia article of each key
 print(corr_matrix_2)
 
-opearson_corr_2=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+wiki_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 for i in range(len(corr_matrix_2)):
     x = corr_matrix_2[i]
     for j in range(len(corr_matrix_2)):
-        y=corr_matrix_2[j]
-        cosine_sim_correlation_2[i][j]=pearson(x,y)
+        y=[corr_matrix_2[l][j] for l in range(len(corr_matrix_2))]
+        wiki_word_corr[i][j]=pearson(x,y)
 
-for i in cosine_sim_correlation_2:
+for i in wiki_word_corr:
     print(i)
+data_wiki_word_corr = pd.DataFrame({
+    #'Keywords':keywords,
+    'targeted threat':[wiki_word_corr[i][0] for i in range(len(wiki_word_corr))],
+    'Advanced Persistent Threat':[wiki_word_corr[i][1] for i in range(len(wiki_word_corr))],
+    'phishing':[wiki_word_corr[i][2] for i in range(len(wiki_word_corr))],
+    'DoS attack':[wiki_word_corr[i][3] for i in range(len(wiki_word_corr))],
+    'malware':[wiki_word_corr[i][4] for i in range(len(wiki_word_corr))],
+    'computer virus':[wiki_word_corr[i][5] for i in range(len(wiki_word_corr))],
+    'spyware':[wiki_word_corr[i][6] for i in range(len(wiki_word_corr))],
+    'malicious bot':[wiki_word_corr[i][7] for i in range(len(wiki_word_corr))],
+    'ransomware':[wiki_word_corr[i][8] for i in range(len(wiki_word_corr))],
+    'encryption':[wiki_word_corr[i][9] for i in range(len(wiki_word_corr))]
+})
 data_pearson_2 = pd.DataFrame({
     #'Keywords':keywords,
     'targeted threat':[corr_matrix_2[i][0] for i in range(len(corr_matrix_2))],
@@ -406,30 +385,105 @@ data_pearson_2 = pd.DataFrame({
     'ransomware':[corr_matrix_2[i][8] for i in range(len(corr_matrix_2))],
     'encryption':[corr_matrix_2[i][9] for i in range(len(corr_matrix_2))]
 })
-print(data_pearson_2)
-corr_pearson_2 = data_pearson.corr(method='pearson')   
-#corr_pearson_abs_2 = np.abs(corr_pearson_2)
-data2 = pd.DataFrame({
-    #'Keywords':keywords,
-    'targeted threat':[cosine_sim_correlation[i][0] for i in range(len(cosine_sim_correlation))],
-    'Advanced Persistent Threat':[cosine_sim_correlation[i][1] for i in range(len(cosine_sim_correlation))],
-    'phishing':[cosine_sim_correlation[i][2] for i in range(len(cosine_sim_correlation))],
-    'DoS attack':[cosine_sim_correlation[i][3] for i in range(len(cosine_sim_correlation))],
-    'malware':[cosine_sim_correlation[i][4] for i in range(len(cosine_sim_correlation))],
-    'computer virus':[cosine_sim_correlation[i][5] for i in range(len(cosine_sim_correlation))],
-    'spyware':[cosine_sim_correlation[i][6] for i in range(len(cosine_sim_correlation))],
-    'malicious bot':[cosine_sim_correlation[i][7] for i in range(len(cosine_sim_correlation))],
-    'ransomware':[cosine_sim_correlation[i][8] for i in range(len(cosine_sim_correlation))],
-    'encryption':[cosine_sim_correlation[i][9] for i in range(len(cosine_sim_correlation))]
-})
-
+#print(data_pearson_2)
+corr_pearson_2 = data_pearson_2.corr(method='pearson')  
+#print(corr_pearson)
+#print(corr_pearson_2)
+#############################################################
 #plt.figure(figsize=(8,8))
+
 fig,axs = plt.subplots(1,2)
-sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
-sns.heatmap(data1,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+sns.heatmap(corr_pearson_2,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+sns.heatmap(data_wiki_word_corr,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
 #fig.tight_layout()
 plt.show()
+fig,axs = plt.subplots(1,2)
+sns.heatmap(corr_pearson_2,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+#fig.tight_layout()
+plt.show()
+###########################################################################
+#Make second correlation matrix such that all values are between 0 and 1
+#divide by the number of times the word of wiki article appears
+for i in range(len(corr_matrix_2)):
+    for j in range(len(corr_matrix_2)):
+        if corr_matrix_2[i][j]!=0:
+            corr_matrix_2[i][j]=corr_matrix_2[i][j]/corr_matrix_2[i][i]
 
+print(corr_matrix_2)
+##mean between corr_matrix and corr_matrix_2
+dist_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+for i in range(len(corr_matrix_2)):
+    for j in range(len(corr_matrix_2)):
+        dist_matrix[i][j]=(corr_matrix[i][j]+corr_matrix_2[i][j])
+        if dist_matrix[i][j]!=0:
+            dist_matrix[i][j]/=2
+print(dist_matrix)
+data_pearson_mean = pd.DataFrame({
+    #'Keywords':keywords,
+    'targeted threat':[dist_matrix[i][0] for i in range(len(dist_matrix))],
+    'Advanced Persistent Threat':[dist_matrix[i][1] for i in range(len(dist_matrix))],
+    'phishing':[dist_matrix[i][2] for i in range(len(dist_matrix))],
+    'DoS attack':[dist_matrix[i][3] for i in range(len(dist_matrix))],
+    'malware':[dist_matrix[i][4] for i in range(len(dist_matrix))],
+    'computer virus':[dist_matrix[i][5] for i in range(len(dist_matrix))],
+    'spyware':[dist_matrix[i][6] for i in range(len(dist_matrix))],
+    'malicious bot':[dist_matrix[i][7] for i in range(len(dist_matrix))],
+    'ransomware':[dist_matrix[i][8] for i in range(len(dist_matrix))],
+    'encryption':[dist_matrix[i][9] for i in range(len(dist_matrix))]
+})
+corr_pearson_mean = data_pearson_mean.corr(method='pearson') 
+fig,axs = plt.subplots(1,2)
+sns.heatmap(corr_pearson_mean,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+#fig.tight_layout()
+plt.show()
+##Define distance as:
+#If dist_matrix[i][j]!=0 then distance between word i and j is first order, directly connected
+#If not then create matrix where matrix[i][j]=1-dist_matrix[i][j]
+#Now run a path finding algorithm to find the shortest path between all words i, j that are not di
+
+
+###########################################################################
+##Calculate distance##
+class Node:
+    def __init__(self,ID,state,action,path_cost):
+        self.ID=ID
+        self.state=state
+        self.action = action
+        self.path_cost = path_cost
+
+class State:
+    def __init__(self,partial_tour):
+        self.partial_tour=partial_tour
+    
+    def get(self):
+        return self.partial_tour  
+def basic_greedy():
+    node = Node(0,State([0]),0,0)
+    path = [node.ID]
+    while len(path)!=num_cities:
+        successors = []
+        for i in range(1,num_cities):#all successors
+            if i==node.ID:
+                continue
+            if i in path:
+                continue
+            new_id = i
+            new_partial_tour=node.state.get().copy()
+            new_partial_tour.append(i)
+            new_state = State(new_partial_tour)
+            new_dist = dist_matrix[node.ID][i]
+            new_pathcost = node.path_cost+new_dist
+            new_node = Node(new_id,new_state,new_dist,new_pathcost)
+            successors.append(new_node)
+        node = min(successors,key=lambda node:node.action)
+        path.append(node.ID)
+    path_cost=node.path_cost+(dist_matrix[0][node.ID])
+    return path,path_cost
+
+
+'''
 ##Save results of algorithm in distance.xlsx 
 # First make my matrix into a dictionary
 # Then convert python dictionary into pandas dataframe
