@@ -248,9 +248,7 @@ for i in range(len(corr_matrix)):
         else:
             if corr_matrix[i][j]!=0:
                 corr_matrix[i][j]=corr_matrix[i][j]/num_articles[i]
-#print(num_articles)
-#print(corr_matrix)
-
+########################################################################################
 def pearson(x,y):#x,y lists
     cov=0
     std_x=0
@@ -274,18 +272,22 @@ def cosine_similarity(x,y):#x,y lists
         xy += x[i]*y[i]
         x_norm+=x[i]**2
         y_norm+=y[i]**2
-    sim_xy = xy/(x_norm*y_norm)
+    
+    if ((x_norm**0.5)*(y_norm**0.5))==0:
+        sim_xy = 0
+    else:
+        sim_xy = xy/((x_norm**0.5)*(y_norm**0.5))
     return sim_xy
 #####################################################################################
 #Calculate correlation between the appearance of each word in article of each key
 art_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-for i in range(len(corr_matrix)):
+for i in range(len(corr_matrix_original)):
     x = corr_matrix_original[i]
     #With x as follows, we get the same pearson correlation matrix as in the dataframe
     #x = [corr_matrix[l][i] for l in range(len(corr_matrix))]
     for j in range(len(corr_matrix_original)):
         y=[corr_matrix_original[l][j] for l in range(len(corr_matrix_original))]
-        art_word_corr[i][j]=pearson(x,y)
+        art_word_corr[i][j]=cosine_similarity(x,y)
 data_art_word_corr = pd.DataFrame({
     #'Keywords':keywords,
     'targeted threat':[art_word_corr[i][0] for i in range(len(art_word_corr))],
@@ -355,7 +357,7 @@ for i in range(len(corr_matrix_2)):
     x = corr_matrix_2[i]
     for j in range(len(corr_matrix_2)):
         y=[corr_matrix_2[l][j] for l in range(len(corr_matrix_2))]
-        wiki_word_corr[i][j]=pearson(x,y)
+        wiki_word_corr[i][j]=cosine_similarity(x,y)
 
 for i in wiki_word_corr:
     print(i)
@@ -385,10 +387,7 @@ data_pearson_2 = pd.DataFrame({
     'ransomware':[corr_matrix_2[i][8] for i in range(len(corr_matrix_2))],
     'encryption':[corr_matrix_2[i][9] for i in range(len(corr_matrix_2))]
 })
-#print(data_pearson_2)
-corr_pearson_2 = data_pearson_2.corr(method='pearson')  
-#print(corr_pearson)
-#print(corr_pearson_2)
+corr_pearson_2 = data_pearson_2.corr(method='pearson')
 #############################################################
 #plt.figure(figsize=(8,8))
 
@@ -397,28 +396,53 @@ sns.heatmap(corr_pearson_2,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0]
 sns.heatmap(data_wiki_word_corr,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
 #fig.tight_layout()
 plt.show()
-fig,axs = plt.subplots(1,2)
-sns.heatmap(corr_pearson_2,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
-sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+#fig,axs = plt.subplots(1,2)
+#sns.heatmap(corr_pearson_2,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+#sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
 #fig.tight_layout()
-plt.show()
+#plt.show()
 ###########################################################################
 #Make second correlation matrix such that all values are between 0 and 1
 #divide by the number of times the word of wiki article appears
-for i in range(len(corr_matrix_2)):
-    for j in range(len(corr_matrix_2)):
-        if corr_matrix_2[i][j]!=0:
-            corr_matrix_2[i][j]=corr_matrix_2[i][j]/corr_matrix_2[i][i]
+#for i in range(len(corr_matrix_2)):
+#    for j in range(len(corr_matrix_2)):
+#        if corr_matrix_2[i][j]!=0:
+#            corr_matrix_2[i][j]=corr_matrix_2[i][j]/corr_matrix_2[i][i]
 
-print(corr_matrix_2)
+#print(corr_matrix_2)
 ##mean between corr_matrix and corr_matrix_2
 dist_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 for i in range(len(corr_matrix_2)):
     for j in range(len(corr_matrix_2)):
-        dist_matrix[i][j]=(corr_matrix[i][j]+corr_matrix_2[i][j])
-        if dist_matrix[i][j]!=0:
-            dist_matrix[i][j]/=2
+        dist_matrix[i][j]=(corr_matrix_original[i][j]+corr_matrix_2[i][j])
+        #if dist_matrix[i][j]!=0:
+        #    dist_matrix[i][j]/=2
 print(dist_matrix)
+###############################################################################
+#Calculate cosine similarity###
+sources_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+for i in range(len(dist_matrix)):
+    x = dist_matrix[i]
+    for j in range(len(dist_matrix)):
+        y=[dist_matrix[l][j] for l in range(len(dist_matrix))]
+        sources_word_corr[i][j]=cosine_similarity(x,y)
+
+for i in sources_word_corr:
+    print(i)
+data_sources_word_corr = pd.DataFrame({
+    #'Keywords':keywords,
+    'targeted threat':[sources_word_corr[i][0] for i in range(len(sources_word_corr))],
+    'Advanced Persistent Threat':[sources_word_corr[i][1] for i in range(len(sources_word_corr))],
+    'phishing':[sources_word_corr[i][2] for i in range(len(sources_word_corr))],
+    'DoS attack':[sources_word_corr[i][3] for i in range(len(sources_word_corr))],
+    'malware':[sources_word_corr[i][4] for i in range(len(sources_word_corr))],
+    'computer virus':[sources_word_corr[i][5] for i in range(len(sources_word_corr))],
+    'spyware':[sources_word_corr[i][6] for i in range(len(sources_word_corr))],
+    'malicious bot':[sources_word_corr[i][7] for i in range(len(sources_word_corr))],
+    'ransomware':[sources_word_corr[i][8] for i in range(len(sources_word_corr))],
+    'encryption':[sources_word_corr[i][9] for i in range(len(sources_word_corr))]
+})
+####Calculate pearson correlation between words####
 data_pearson_mean = pd.DataFrame({
     #'Keywords':keywords,
     'targeted threat':[dist_matrix[i][0] for i in range(len(dist_matrix))],
@@ -435,7 +459,41 @@ data_pearson_mean = pd.DataFrame({
 corr_pearson_mean = data_pearson_mean.corr(method='pearson') 
 fig,axs = plt.subplots(1,2)
 sns.heatmap(corr_pearson_mean,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
-sns.heatmap(corr_pearson,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+sns.heatmap(data_sources_word_corr,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
+#fig.tight_layout()
+plt.show()
+##########################################################################
+##Symmetric matrix that represents distance of words##
+all_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+for i in range(len(all_matrix)):
+    for j in range(len(all_matrix)):
+        all_matrix[i][j]=(dist_matrix[i][j]+dist_matrix[j][i])
+print(all_matrix)
+word_dist_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+for i in range(len(word_dist_matrix)):
+    x = all_matrix[i]
+    for j in range(len(word_dist_matrix)):
+        y=[all_matrix[l][j] for l in range(len(word_dist_matrix))]
+        word_dist_matrix[i][j]=cosine_similarity(x,y)
+
+for i in word_dist_matrix:
+    print(i)
+data_word_distances = pd.DataFrame({
+    #'Keywords':keywords,
+    'targeted threat':[word_dist_matrix[i][0] for i in range(len(dist_matrix))],
+    'Advanced Persistent Threat':[word_dist_matrix[i][1] for i in range(len(dist_matrix))],
+    'phishing':[word_dist_matrix[i][2] for i in range(len(dist_matrix))],
+    'DoS attack':[word_dist_matrix[i][3] for i in range(len(dist_matrix))],
+    'malware':[word_dist_matrix[i][4] for i in range(len(dist_matrix))],
+    'computer virus':[word_dist_matrix[i][5] for i in range(len(dist_matrix))],
+    'spyware':[word_dist_matrix[i][6] for i in range(len(dist_matrix))],
+    'malicious bot':[word_dist_matrix[i][7] for i in range(len(dist_matrix))],
+    'ransomware':[word_dist_matrix[i][8] for i in range(len(dist_matrix))],
+    'encryption':[word_dist_matrix[i][9] for i in range(len(dist_matrix))]
+})
+fig,axs = plt.subplots(1,2)
+sns.heatmap(data_word_distances,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[0])
+sns.heatmap(data_sources_word_corr,cmap='BrBG',annot=True,annot_kws={'size':6},ax=axs[1])
 #fig.tight_layout()
 plt.show()
 ##Define distance as:
