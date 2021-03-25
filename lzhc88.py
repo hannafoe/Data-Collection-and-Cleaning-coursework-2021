@@ -17,8 +17,7 @@ import copy
 keywords = ['targeted threat','Advanced Persistent Threat',
 'phishing','DoS attack','malware','computer virus','spyware',
 'malicious bot','ransomware','encryption']
-check_keywords = [['target','threat'],['advance','persist','threat'],
-['phish']]
+
 def try_url(url):
     try:
         res = requests.get(url,stream=True,timeout=1)
@@ -104,7 +103,7 @@ def write_urltext_into_file(url,path,i):
             for text in text_blocks:
                 text = text.get_text()
                 f.write(text+"\n")
-'''
+
 ## Problem 1
 #Python program that downloads the webpage content (from BBC news)
 #of the top 100 articles relevant to the given keywords from
@@ -134,7 +133,7 @@ for key in keywords:
             if not headlines:
                 break
             for headline in headlines:
-                print(headline)
+                #print(headline)
                 link = headline['href']
                 if 'programmes' in link and 'news' not in link:
                     continue
@@ -165,7 +164,7 @@ for key in keywords:
                     #            break
                     relevant_url=True
                     if good_url==True and relevant_url==True:
-                        print(link)
+                        #print(link)
                         link_list.append(link)
             p+=1
     #print(p)
@@ -201,7 +200,7 @@ for key in link_dict:
     for url in link_dict[key]:
         i+=1
         write_urltext_into_file(url,path,i)    
-'''
+
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
@@ -416,4 +415,3 @@ writer.save()
 df = pd.read_excel('./distance.xlsx')
 plot_heatmap(data_word_distances,'Distance between words')
 #sns.pairplot(data=df1,hue='Keywords')
-'''
