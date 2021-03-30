@@ -220,7 +220,7 @@ path = os.path.join(cur_dir,new_dir)
 #In the case that a keyword i is very very similar, keyword i is found in all 100 articles of key j
 #Then occur_matrix[i][j]=100
 #
-
+'''
 occur_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 i=-1
 k=0
@@ -322,7 +322,7 @@ def calculate_cosine_similarity(matrix,new_matrix):
             y=[matrix[l][j] for l in range(len(matrix))]
             new_matrix[i][j]=cosine_similarity(x,y)
     return new_matrix
-
+'''
 #####################################################################################
 #OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
 #Calculate correlation between the appearance of each keyword i in article of keyword j
@@ -347,7 +347,6 @@ for key in keywords:
     j=0
     for other_key in keywords:
         key_in_wikipedia = check_if_word_in_wikipedia_website(url_wikipedia+key,other_key)
-        #print(key_in_wikipedia)
         occur_matrix_2[i][j]=key_in_wikipedia
         j+=1
     i+=1
@@ -446,7 +445,7 @@ for i in range(len(dictionaries)):
 concatenated = pd.concat(frames)
 concatenated = concatenated.fillna(0)
 print(concatenated)
-
+'''
 def calculate_cosine_similarity_dataframe(df,new_df):
     for index1, row1 in df.iterrows():
         #print(row1)
@@ -454,7 +453,7 @@ def calculate_cosine_similarity_dataframe(df,new_df):
         for index2, row2 in df.iterrows():
             y=row2
             new_df.at[index1,index2]=cosine_similarity(x,y)
-
+'''
 zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
 new_df = create_dataframe(zero_matrix)
 calculate_cosine_similarity_dataframe(concatenated,new_df)
@@ -501,7 +500,7 @@ calculate_cosine_similarity_dataframe(concatenated2,new_df2)
 print(new_df2)
 new_df2-=0.84
 new_df2/=0.16
-plot_heatmap(new_df2,"other distance")
+plot_heatmap(new_df2,"other distance")'''
 #############################################################################################################################
 url_wikipedia = 'https://en.wikipedia.org/wiki/'
 dictionaries3 = {key:{} for key in keywords}
@@ -522,6 +521,10 @@ for key in keywords:
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         content=soup.get_text()
+        print(len(content))
+        if len(content)>4802:
+            content = content[:4802]
+        print(len(content))
         content = re.sub('[^a-zA-Z\s]', ' ',content)
         words = content.split()
         #print(words)
@@ -547,9 +550,13 @@ zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywor
 new_df3 = create_dataframe(zero_matrix)
 calculate_cosine_similarity_dataframe(concatenated3,new_df3)
 print(new_df3)
-new_df3-=0.6
-new_df3/=0.4
+#new_df3-=0.6
+#new_df3/=0.4
+new_df3-=0.4
+new_df3/=0.6
 plot_heatmap(new_df3,"other distance")
+
+'''
 df_add_ver1 = data_word_similarities.add(new_df3,fill_value=0)
 df_add_ver1/=2
 plot_heatmap(df_add_ver1,"df_add_ver1")
@@ -560,7 +567,7 @@ df_add_ver3 = df_add_ver2.add(new_df2,fill_value=0)
 df_add_ver3/=2
 plot_heatmap(df_add_ver3,"df_add_ver3")
 '''
-
+'''
 ##Save data_word_distances in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
 data_word_distances.to_excel(writer, sheet_name='Sheet1', index=False)
