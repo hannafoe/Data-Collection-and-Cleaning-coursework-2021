@@ -7,7 +7,6 @@ import re
 import os
 import numpy as np
 import pandas as pd
-#import matplotlib.pyplot as plt
 import seaborn as sns
 import xlsxwriter
 from statistics import mean
@@ -104,7 +103,7 @@ url = 'https://www.bbc.co.uk/search'
 link_dict ={}
 num_pages=[]
 num_articles=[]
-'''
+
 for key in keywords:
     link_list = []
     p=1
@@ -180,7 +179,7 @@ for key in link_dict:
     for url in link_dict[key]:
         i+=1
         write_urltext_into_file(url,path,i)    
-'''
+
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
@@ -227,10 +226,6 @@ def create_dataframe(matrix):
             4:'malware',5:'computer virus',6:'spyware',7:'malicious bot',8:'ransomware',9:'encryption'
             },inplace=True)
     return df
-def plot_heatmap(df,title):
-    fig = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6},square=True,linewidths=.5)
-    fig.get_figure().tight_layout()
-    fig.get_figure().savefig(title+".png",dpi=300)
 def calculate_cosine_similarity(matrix,new_matrix):
     for i in range(len(matrix)):
         x = matrix[i]
@@ -251,7 +246,6 @@ def calculate_cosine_similarity_dataframe(df,new_df):
 #In the case that a keyword i is very very similar, keyword i is found in all 100 articles of key j
 #Then occur_matrix[i][j]=100
 #
-
 occur_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 i=-1
 k=0
@@ -270,16 +264,6 @@ for key in keywords:
                     if other in f.read():
                         occur_matrix[i][j]+=1
 #Now we have the occurrence matrix
-#####################################################################################
-#OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
-#Calculate correlation between the appearance of each keyword i in article of keyword j
-art_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-art_word_corr=calculate_cosine_similarity(occur_matrix,art_word_corr)
-data_art_word_corr=create_dataframe(art_word_corr)
-#Optionally plot the data#
-print(data_art_word_corr)
-#plot_heatmap(data_art_word_corr,'Correlation article and keywords_method 1.1')
-##############################################################################################################
 ###############################################################################################################
 #METHOD 1.2 TO FIND THE SIMILARITY BETWEEN WORDS##
 ##->LATER ADD BOTH TOGETHER##
@@ -297,16 +281,7 @@ for key in keywords:
         occur_matrix_2[i][j]=key_in_wikipedia
         j+=1
     i+=1
-#################################################################################
-#OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
-#Calculate correlation between the number of appearances of each word in wikipedia article of each key
-wiki_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-wiki_word_corr = calculate_cosine_similarity(occur_matrix_2,wiki_word_corr)
-data_wiki_word_corr = create_dataframe(wiki_word_corr)
-#Optionally print and plot the data#
-print(data_wiki_word_corr)
-plot_heatmap(data_wiki_word_corr,'Correlation wikipedia article and keywords_method 1.2')
-###################################################################################
+
 ####################################################################################
 ##ADD VALUES OF TWO METHODS TOGETHER##
 dist_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
@@ -322,9 +297,8 @@ for i in range(len(sym_matrix)):
 word_sym_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 word_sym_matrix = calculate_cosine_similarity(sym_matrix,word_sym_matrix)
 data_word_similarities = create_dataframe(word_sym_matrix)
-#Optionally print and plot the data#
+#Optionally print the data#
 print(data_word_similarities)
-plot_heatmap(data_word_similarities,'Similarity of keywords_method 1')
 ##########################################################################
 ##METHOD 2############################################################
 ##Do a semantic analysis of the words used in 9 of each article
@@ -367,11 +341,9 @@ zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywor
 articles_SA = create_dataframe(zero_matrix)
 calculate_cosine_similarity_dataframe(concatenated,articles_SA)
 #Min-max scaling
-
 articles_SA-=articles_SA.min()
 articles_SA/=(articles_SA.max()-articles_SA.min())
 print(articles_SA)
-plot_heatmap(articles_SA,"Similarity of keywords_LSA articles_method 2")
 #############################################################################################################################
 ##METHOD 3##
 ##Do a semantic analysis on the wikipedia articles of each keyword
@@ -422,22 +394,18 @@ calculate_cosine_similarity_dataframe(concatenated2,wiki_SA)
 wiki_SA-=wiki_SA.min()
 wiki_SA/=(wiki_SA.max()-wiki_SA.min())
 print(wiki_SA)
-plot_heatmap(wiki_SA,"Similarity of keywords_LSA wikipedia_method 3")
 ################################################################
 #Now add all methods together:
-#ratio = (first_method+second_method)*2+third_method/4+fourth_method/4
 similarity = wiki_SA.add(articles_SA,fill_value=0)
 similarity/=2
 similarity = similarity.add(data_word_similarities)
 similarity/=2
-plot_heatmap(similarity,"Similarity of keywords_all methods combined")
 ##########################################################################
 #FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
 #Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1
 #And least similar words have word_sym_matrix[i][j]=0
 #Define distance(i,j)=1-word_sym_matrix[i][j]
 distance = 1-similarity
-plot_heatmap(distance,'Distance between keywords')
 
 ##Save distance in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
@@ -445,6 +413,10 @@ distance.to_excel(writer, sheet_name='Sheet1', index=False)
 writer.save()
 
 ## Problem 4
+def plot_heatmap(df,title):
+    fig = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6},square=True,linewidths=.5,fmt=".2f")
+    fig.get_figure().tight_layout()
+    fig.get_figure().savefig(title+".png",dpi=300)
 df = pd.read_excel('./distance.xlsx')
 df.rename(index={0:'targeted threat',1:'Advanced Persistent Threat',2:'phishing',3:'DoS attack',
     4:'malware',5:'computer virus',6:'spyware',7:'malicious bot',8:'ransomware',9:'encryption'
