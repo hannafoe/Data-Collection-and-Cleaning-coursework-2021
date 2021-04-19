@@ -17,6 +17,7 @@ import copy
 keywords = ['targeted threat','Advanced Persistent Threat',
 'phishing','DoS attack','malware','computer virus','spyware',
 'malicious bot','ransomware','encryption']
+
 def try_url(url):
     try:
         res = requests.get(url,stream=True,timeout=1)
@@ -67,7 +68,16 @@ def check_if_word_in_wikipedia_website(url,word):
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         count = soup.get_text().count(word)
+        '''
+        if len(word.split())>1:
+            #print(word.split())
+            for split_word in word.split():
+                partly_similar= soup.get_text().count(split_word)
+                partly_similar/=4
+                count+=partly_similar'''
         return count
+        #if word in soup.get_text():
+        #    count+=1
             
         
 
@@ -95,7 +105,7 @@ def write_urltext_into_file(url,path,i):
             for text in text_blocks:
                 text = text.get_text()
                 f.write(text+"\n")
-
+'''
 ## Problem 1
 #Python program that downloads the webpage content (from BBC news)
 #of the top 100 articles relevant to the given keywords from
@@ -104,7 +114,7 @@ url = 'https://www.bbc.co.uk/search'
 link_dict ={}
 num_pages=[]
 num_articles=[]
-'''
+
 for key in keywords:
     link_list = []
     p=1
@@ -117,12 +127,15 @@ for key in keywords:
         except Exception as err:
             print(f'Other error occurred: {err}')
         else:
+            #print('Success!')
+            #print(r.url)
             txt = r.text
             soup = BeautifulSoup(txt, features='lxml')
-            headlines = soup.find_all('a', class_=re.compile("PromoLink"))
+            headlines = soup.find_all('a', class_=re.compile("PromoLink"))#, string=[re.compile(k, re.IGNORECASE) for k in key.split()])
             if not headlines:
                 break
             for headline in headlines:
+                #print(headline)
                 link = headline['href']
                 if 'programmes' in link and 'news' not in link:
                     continue
@@ -153,14 +166,21 @@ for key in keywords:
                     #            break
                     relevant_url=True
                     if good_url==True and relevant_url==True:
+                        #print(link)
                         link_list.append(link)
             p+=1
+    #print(p)
+    #print()
     num_pages.append(p)
     num_articles.append(len(link_list))
     link_dict[key] = link_list.copy()
+    #print(len(link_dict[key]))
 for element in link_dict:
     if len(link_dict[element])>=100:
         link_dict[element]=link_dict[element][:100]
+
+#print(num_pages)
+#print(num_articles)
 
 ## Problem 2
 #Use BeautifulSoup to collect and process the articles contents. 
@@ -194,8 +214,69 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 new_dir = "articles"
 path = os.path.join(cur_dir,new_dir)
 #
-#FUNCTIONS USED TO CALCULATE THE SIMILARITY BETWEEN TWO KEYWORDS#############################
+#FIRST METHOD TO FIND THE SIMILARITY BETWEEN WORDS##
+#Search for the other keywords in the articles
+#If keyword i is mentioned in article of key j, then increase occur_matrix[i][j] value by 1
+#In the case that a keyword i is very very similar, keyword i is found in all 100 articles of key j
+#Then occur_matrix[i][j]=100
+#
+'''
+occur_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+i=-1
+k=0
+for key in keywords:
+    i+=1
+    current = key
+    for file in os.listdir(path):
+        if file.startswith(key):
+            num_articles[i]+=1
+            path_file = os.path.join(path,file)
+            with open(path_file,'r',encoding='utf8',errors='ignore') as f:
+                j=-1
+                for other in keywords:
+                    j+=1
+                    f.seek(0)
+                    if other in f.read():
+                        occur_matrix[i][j]+=1
+#Now we have the occurrence matrix
+print(occur_matrix)
+#Save this original occurrence matrix
+occur_matrix_original = copy.deepcopy(occur_matrix)
+######################################################################################
+#NOT USED#
+#Now create a new version, which divides every value occur_matrix[i][j]
+#by the number of articles found for key i
+#and gives occur_matrix[i][j]=1 if i==j
+#for i in range(len(occur_matrix)):
+#    for j in range(len(occur_matrix)):
+#        if i==j:
+#            occur_matrix[i][j]=1
+#        else:
+#            if occur_matrix[i][j]!=0:
+#                occur_matrix[i][j]=occur_matrix[i][j]/num_articles[i]'''
+########################################################################################
+#FUNCTIONS TO CALCULATE THE SIMILARITY BETWEEN TWO KEYWORDS#############################
 #Function to calculate the pearson correlation between two keywords i and j
+#Did not use this in the end because of the negative correlation
+#NOT USED#
+def pearson(x,y):#x,y lists
+    cov=0
+    std_x=0
+    std_y=0
+    x_mean = mean(x)
+    y_mean = mean(y)
+    for i in range(len(x)):
+        cov += (x[i]-x_mean)*(y[i]-y_mean)
+        std_x +=(x[i]-x_mean)**2
+        std_y += (y[i]-y_mean)**2
+    if ((std_x*std_y)**0.5)==0:
+        pearson_xy = 0
+    else:
+        pearson_xy = cov/((std_x*std_y)**0.5)
+    return pearson_xy
+
+#Instead used cosine_similarity as measure of similarity between two keywords
+#USED#
 def cosine_similarity(x,y):#x,y lists
     xy=0
     x_norm=0
@@ -244,42 +325,12 @@ def calculate_cosine_similarity(matrix,new_matrix):
             y=[matrix[l][j] for l in range(len(matrix))]
             new_matrix[i][j]=cosine_similarity(x,y)
     return new_matrix
-def calculate_cosine_similarity_dataframe(df,new_df):
-    for index1, row1 in df.iterrows():
-        #print(row1)
-        x=row1
-        for index2, row2 in df.iterrows():
-            y=row2
-            new_df.at[index1,index2]=cosine_similarity(x,y)
-#FIRST METHOD TO FIND THE SIMILARITY BETWEEN WORDS##
-#Search for the other keywords in the articles
-#If keyword i is mentioned in article of key j, then increase occur_matrix[i][j] value by 1
-#In the case that a keyword i is very very similar, keyword i is found in all 100 articles of key j
-#Then occur_matrix[i][j]=100
-#
-occur_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-i=-1
-k=0
-for key in keywords:
-    i+=1
-    current = key
-    for file in os.listdir(path):
-        if file.startswith(key):
-            num_articles[i]+=1
-            path_file = os.path.join(path,file)
-            with open(path_file,'r',encoding='utf8',errors='ignore') as f:
-                j=-1
-                for other in keywords:
-                    j+=1
-                    f.seek(0)
-                    if other in f.read():
-                        occur_matrix[i][j]+=1
-#Now we have the occurrence matrix
+'''
 #####################################################################################
 #OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
 #Calculate correlation between the appearance of each keyword i in article of keyword j
 art_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-art_word_corr=calculate_cosine_similarity(occur_matrix,art_word_corr)
+art_word_corr=calculate_cosine_similarity(occur_matrix_original,art_word_corr)
 data_art_word_corr=create_dataframe(art_word_corr)
 #Optionally print and plot the data#
 print(data_art_word_corr)
@@ -289,7 +340,7 @@ plot_heatmap(data_art_word_corr,'Correlation article and keywords')
 #SECOND METHOD TO FIND THE SIMILARITY BETWEEN WORDS##
 ##->LATER ADD BOTH TOGETHER##
 #Work with wikipedia articles
-#Find how often the other keywords are mentioned in the wikipedia articles
+#Find how often the other key words are mentioned in the wikipedia articles
 url_wikipedia = 'https://en.wikipedia.org/wiki/'
 occur_matrix_2 = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 i=0
@@ -311,18 +362,36 @@ data_wiki_word_corr = create_dataframe(wiki_word_corr)
 #Optionally print and plot the data#
 print(data_wiki_word_corr)
 plot_heatmap(data_wiki_word_corr,'Correlation wikipedia article and keywords')
-###################################################################################
+###########################################################################
+#Make second correlation matrix such that all values are between 0 and 1
+#divide by the number of times the word of wiki article appears
+#for i in range(len(occur_matrix_2)):
+#    for j in range(len(occur_matrix_2)):
+#        if occur_matrix_2[i][j]!=0:
+#            occur_matrix_2[i][j]=occur_matrix_2[i][j]/occur_matrix_2[i][i]
 ####################################################################################
-##ADD VALUES OF TWO METHODS TOGETHER##
+##ADD VALUES OF BOTH METHODS TOGETHER TO CALCULATE THE SIMILARITY BETWEEN TWO WORDS##
 dist_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 for i in range(len(occur_matrix_2)):
     for j in range(len(occur_matrix_2)):
-        dist_matrix[i][j]=(occur_matrix[i][j]+occur_matrix_2[i][j])
+        dist_matrix[i][j]=(occur_matrix_original[i][j]+occur_matrix_2[i][j])
+print(dist_matrix)
+###############################################################################
+#OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
+#Calculate cosine similarity###
+sources_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
+sources_word_corr = calculate_cosine_similarity(dist_matrix,sources_word_corr)
+data_sources_word_corr = create_dataframe(sources_word_corr)
+#Optionally print and plot the data#
+print(data_sources_word_corr)
+plot_heatmap(data_sources_word_corr,'Correlation wiki+articles and keywords')
+##########################################################################
 ##Create a matrix which is symmetric, so that matrix[i][j]==matrix[j][i]
 sym_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 for i in range(len(sym_matrix)):
     for j in range(len(sym_matrix)):
         sym_matrix[i][j]=(dist_matrix[i][j]+dist_matrix[j][i])
+print(sym_matrix)
 ##Calculate the similarity between the words by using cosine similarity##
 word_sym_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 word_sym_matrix = calculate_cosine_similarity(sym_matrix,word_sym_matrix)
@@ -331,58 +400,113 @@ data_word_similarities = create_dataframe(word_sym_matrix)
 print(data_word_similarities)
 plot_heatmap(data_word_similarities,'Similarity of keywords')
 ##########################################################################
-##THIRD METHOD############################################################
-##Do a semantic analysis of the words used in 9 of each article
-##Only do it for 9 articles, because only 9 were found for malicious bot
+#FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
+#Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1
+#And least similar words have word_sym_matrix[i][j]=0
+#Define distance(i,j)=1-word_sym_matrix[i][j]
+data_word_distances = 1-data_word_similarities
+plot_heatmap(data_word_distances,'Distance between words')
+
+######################################################################################################################
+##THIRD METHOD########################################################################################################
+##Look at neighbouring words##
+##Now first get all sentence with key words in them from the articles##
 dictionaries = {key:{} for key in keywords}
+#dictionaries['malware']['and']=1
+print(dictionaries)
+for key in keywords:
+    current = key
+    for file in os.listdir(path):
+        if file.startswith(key):
+            path_file = os.path.join(path,file)
+            with open(path_file,'r',encoding='utf8',errors='ignore') as f:
+                lines = f.readlines()
+                for line in lines:
+                    for other in keywords:
+                        if other in line:
+                            #Put every word in this line into dictionary of other
+                            #if word already exists in dictionary then increase the count
+                            #First split the line into words
+                            line = re.sub('[^a-zA-Z\s]', ' ', line)
+                            words = line.split()
+                            #print(words)
+                            for word in words:
+                                if word.islower()==False:
+                                    word=word.lower()
+                                if word in dictionaries[other]:
+                                    dictionaries[other][word]+=1
+                                else:
+                                    dictionaries[other][word]=1
+    print(key)                    
+print(dictionaries['malware'])
+frames = []
+for i in range(len(dictionaries)):
+    print(len(dictionaries[keywords[i]]))
+    df = pd.DataFrame(dictionaries[keywords[i]],index=[keywords[i]])
+    frames.append(df)
+
+concatenated = pd.concat(frames)
+concatenated = concatenated.fillna(0)
+print(concatenated)
+'''
+def calculate_cosine_similarity_dataframe(df,new_df):
+    for index1, row1 in df.iterrows():
+        #print(row1)
+        x=row1
+        for index2, row2 in df.iterrows():
+            y=row2
+            new_df.at[index1,index2]=cosine_similarity(x,y)
+'''
+zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
+new_df = create_dataframe(zero_matrix)
+calculate_cosine_similarity_dataframe(concatenated,new_df)
+print(new_df)
+plot_heatmap(new_df,"other distance")'''
+################################################################################################################
+
+dictionaries2 = {key:{} for key in keywords}
 count = 0
-#Go through the contents of 9 articles for each keyword
+
 for key in keywords:
     for file in os.listdir(path):
         if file.startswith(key) and count<9:
+            print(file)
             count+=1
             path_file = os.path.join(path,file)
             with open(path_file,'r',encoding='utf8',errors='ignore') as f:
-                #read the content line by line
                 lines = f.readlines()
                 for line in lines:
-                    #split the lines into words
                     line = re.sub('[^a-zA-Z\s]', ' ', line)
                     words = line.split()
-                    #save them in dictionary, along with occurence count
+                    #print(words)
                     for word in words:
                         if word.islower()==False:
                             word=word.lower()
-                        if word in dictionaries[key]:
-                            dictionaries[key][word]+=1
+                        if word in dictionaries2[key]:
+                            dictionaries2[key][word]+=1
                         else:
-                            dictionaries[key][word]=1
+                            dictionaries2[key][word]=1
+    print(key)
     count=0
-#Make a dataframe for dictionary of each keyword
-frames = []
-for i in range(len(dictionaries)):
-    df = pd.DataFrame(dictionaries[keywords[i]],index=[keywords[i]])
-    frames.append(df)
-#concatenate all dataframes to huge dictionary, with occurence count of all words
-#for each keyword, if word didn't occur for one keyword fillna with 0
-concatenated = pd.concat(frames)
-concatenated = concatenated.fillna(0)
+frames2 = []
+for i in range(len(dictionaries2)):
+    print(len(dictionaries2[keywords[i]]))
+    df = pd.DataFrame(dictionaries2[keywords[i]],index=[keywords[i]])
+    frames2.append(df)
 
+concatenated2 = pd.concat(frames2)
+concatenated2 = concatenated2.fillna(0)
+print(concatenated2)
 zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
-articles_SA = create_dataframe(zero_matrix)
-calculate_cosine_similarity_dataframe(concatenated,articles_SA)
-#Min-max scaling
-
-articles_SA-=articles_SA.min()
-articles_SA/=(articles_SA.max()-articles_SA.min())
-plot_heatmap(articles_SA,"articles_semantic_analysis")
+new_df2 = create_dataframe(zero_matrix)
+calculate_cosine_similarity_dataframe(concatenated2,new_df2)
+print(new_df2)
+new_df2-=0.84
+new_df2/=0.16
+plot_heatmap(new_df2,"other distance")
 #############################################################################################################################
-##Fourth method##
-##Do a semantic analysis on the wikipedia articles of each keyword
-##cut down the number of words to the number of words encountered in the shortest article
-##Code is very similar to third method
 url_wikipedia = 'https://en.wikipedia.org/wiki/'
-dictionaries2 = {key:{} for key in keywords}
+dictionaries3 = {key:{} for key in keywords}
 
 for key in keywords:
     k = key
@@ -400,49 +524,60 @@ for key in keywords:
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         content=soup.get_text()
+        print(len(content))
         if len(content)>4802:
             content = content[:4802]
+        print(len(content))
         content = re.sub('[^a-zA-Z\s]', ' ',content)
         words = content.split()
+        #print(words)
         for word in words:
             if word.islower()==False:
                 word=word.lower()
-            if word in dictionaries2[key]:
-                dictionaries2[key][word]+=1
+            if word in dictionaries3[key]:
+                dictionaries3[key][word]+=1
             else:
-                dictionaries2[key][word]=1
+                dictionaries3[key][word]=1
+    print(key)
 
-frames2 = []
-for i in range(len(dictionaries2)):
-    df = pd.DataFrame(dictionaries2[keywords[i]],index=[keywords[i]])
-    frames2.append(df)
+frames3 = []
+for i in range(len(dictionaries3)):
+    print(len(dictionaries3[keywords[i]]))
+    df = pd.DataFrame(dictionaries3[keywords[i]],index=[keywords[i]])
+    frames3.append(df)
 
-concatenated2 = pd.concat(frames2)
-concatenated2 = concatenated2.fillna(0)
+concatenated3 = pd.concat(frames3)
+concatenated3 = concatenated3.fillna(0)
+print(concatenated3)
 zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
-wiki_SA = create_dataframe(zero_matrix)
-calculate_cosine_similarity_dataframe(concatenated2,wiki_SA)
-#min-max-scaling
-wiki_SA-=wiki_SA.min()
-wiki_SA/=(wiki_SA.max()-wiki_SA.min())
-plot_heatmap(wiki_SA,"other distance")
-################################################################
-#Now add all methods together:
-#ratio = (first_method+second_method)*2+third_method/4+fourth_method/4
-similarity = wiki_SA.add(articles_SA,fill_value=0)
-similarity/=2
-similarity = similarity.add(data_word_similarities)
-similarity/=2
-plot_heatmap(similarity,"final similarity of words")
-##########################################################################
-#FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
-#Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1
-#And least similar words have word_sym_matrix[i][j]=0
-#Define distance(i,j)=1-word_sym_matrix[i][j]
-distance = 1-similarity
-plot_heatmap(distance,'Distance between words')
+new_df3 = create_dataframe(zero_matrix)
+calculate_cosine_similarity_dataframe(concatenated3,new_df3)
+print(new_df3)
+#new_df3-=0.6
+#new_df3/=0.4
+new_df3-=0.4
+new_df3/=0.6
+plot_heatmap(new_df3,"other distance")
 
-##Save distance in distance.xlsx 
+'''
+df_add_ver1 = data_word_similarities.add(new_df3,fill_value=0)
+df_add_ver1/=2
+plot_heatmap(df_add_ver1,"df_add_ver1")
+df_add_ver2 = df_add_ver1.add(new_df,fill_value=0)
+df_add_ver2/=2
+plot_heatmap(df_add_ver2,"df_add_ver2")
+df_add_ver3 = df_add_ver2.add(new_df2,fill_value=0)
+df_add_ver3/=2
+plot_heatmap(df_add_ver3,"df_add_ver3")
+'''
+'''
+##Save data_word_distances in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
-distance.to_excel(writer, sheet_name='Sheet1', index=False)
+data_word_distances.to_excel(writer, sheet_name='Sheet1', index=False)
 writer.save()
+
+## Problem 4
+df = pd.read_excel('./distance.xlsx')
+plot_heatmap(data_word_distances,'Distance between words')
+#sns.pairplot(data=df1,hue='Keywords')
+'''
