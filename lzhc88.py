@@ -7,7 +7,7 @@ import re
 import os
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import seaborn as sns
 import xlsxwriter
 from statistics import mean
@@ -132,9 +132,7 @@ for key in keywords:
                     relevant_url = False
                     good_url = True
                     if 'guides' in link:
-                        print(link) 
                         good_url = try_url(link)
-                        print(good_url)
                     #Split keyword at space
                     #Check if one of the components of keyword is included in the header
                     #THIS METHOD TAKES AWAY ARTICLES THAT ARE IRRELEVANT; BUT ALSO SOME ARTICLES THAT ARE RELEVANT
@@ -196,6 +194,7 @@ path = os.path.join(cur_dir,new_dir)
 #
 #FUNCTIONS USED TO CALCULATE THE SIMILARITY BETWEEN TWO KEYWORDS#############################
 #Function to calculate the pearson correlation between two keywords i and j
+
 def cosine_similarity(x,y):#x,y lists
     xy=0
     x_norm=0
@@ -229,14 +228,9 @@ def create_dataframe(matrix):
             },inplace=True)
     return df
 def plot_heatmap(df,title):
-    fig, ax = plt.subplots()
-    ax = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6})
-    ax.set_title(title, fontsize=10, fontweight='bold')
-    fig.tight_layout()
-    plt.show()
-    #Try to make this without matplotlib
-    #heatmap =sns.heamap(df)
-    #heatmap.get_figure().savefig("output.png")
+    fig = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6},square=True,linewidths=.5)
+    fig.get_figure().tight_layout()
+    fig.get_figure().savefig(title+".png",dpi=300)
 def calculate_cosine_similarity(matrix,new_matrix):
     for i in range(len(matrix)):
         x = matrix[i]
@@ -251,12 +245,13 @@ def calculate_cosine_similarity_dataframe(df,new_df):
         for index2, row2 in df.iterrows():
             y=row2
             new_df.at[index1,index2]=cosine_similarity(x,y)
-#FIRST METHOD TO FIND THE SIMILARITY BETWEEN WORDS##
+#METHOD 1.1 TO FIND THE SIMILARITY BETWEEN WORDS##
 #Search for the other keywords in the articles
 #If keyword i is mentioned in article of key j, then increase occur_matrix[i][j] value by 1
 #In the case that a keyword i is very very similar, keyword i is found in all 100 articles of key j
 #Then occur_matrix[i][j]=100
 #
+
 occur_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 i=-1
 k=0
@@ -281,12 +276,12 @@ for key in keywords:
 art_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 art_word_corr=calculate_cosine_similarity(occur_matrix,art_word_corr)
 data_art_word_corr=create_dataframe(art_word_corr)
-#Optionally print and plot the data#
+#Optionally plot the data#
 print(data_art_word_corr)
-plot_heatmap(data_art_word_corr,'Correlation article and keywords')
+#plot_heatmap(data_art_word_corr,'Correlation article and keywords_method 1.1')
 ##############################################################################################################
 ###############################################################################################################
-#SECOND METHOD TO FIND THE SIMILARITY BETWEEN WORDS##
+#METHOD 1.2 TO FIND THE SIMILARITY BETWEEN WORDS##
 ##->LATER ADD BOTH TOGETHER##
 #Work with wikipedia articles
 #Find how often the other keywords are mentioned in the wikipedia articles
@@ -310,7 +305,7 @@ wiki_word_corr = calculate_cosine_similarity(occur_matrix_2,wiki_word_corr)
 data_wiki_word_corr = create_dataframe(wiki_word_corr)
 #Optionally print and plot the data#
 print(data_wiki_word_corr)
-plot_heatmap(data_wiki_word_corr,'Correlation wikipedia article and keywords')
+plot_heatmap(data_wiki_word_corr,'Correlation wikipedia article and keywords_method 1.2')
 ###################################################################################
 ####################################################################################
 ##ADD VALUES OF TWO METHODS TOGETHER##
@@ -329,9 +324,9 @@ word_sym_matrix = calculate_cosine_similarity(sym_matrix,word_sym_matrix)
 data_word_similarities = create_dataframe(word_sym_matrix)
 #Optionally print and plot the data#
 print(data_word_similarities)
-plot_heatmap(data_word_similarities,'Similarity of keywords')
+plot_heatmap(data_word_similarities,'Similarity of keywords_method 1')
 ##########################################################################
-##THIRD METHOD############################################################
+##METHOD 2############################################################
 ##Do a semantic analysis of the words used in 9 of each article
 ##Only do it for 9 articles, because only 9 were found for malicious bot
 dictionaries = {key:{} for key in keywords}
@@ -375,9 +370,10 @@ calculate_cosine_similarity_dataframe(concatenated,articles_SA)
 
 articles_SA-=articles_SA.min()
 articles_SA/=(articles_SA.max()-articles_SA.min())
-plot_heatmap(articles_SA,"articles_semantic_analysis")
+print(articles_SA)
+plot_heatmap(articles_SA,"Similarity of keywords_LSA articles_method 2")
 #############################################################################################################################
-##Fourth method##
+##METHOD 3##
 ##Do a semantic analysis on the wikipedia articles of each keyword
 ##cut down the number of words to the number of words encountered in the shortest article
 ##Code is very similar to third method
@@ -425,7 +421,8 @@ calculate_cosine_similarity_dataframe(concatenated2,wiki_SA)
 #min-max-scaling
 wiki_SA-=wiki_SA.min()
 wiki_SA/=(wiki_SA.max()-wiki_SA.min())
-plot_heatmap(wiki_SA,"other distance")
+print(wiki_SA)
+plot_heatmap(wiki_SA,"Similarity of keywords_LSA wikipedia_method 3")
 ################################################################
 #Now add all methods together:
 #ratio = (first_method+second_method)*2+third_method/4+fourth_method/4
@@ -433,16 +430,23 @@ similarity = wiki_SA.add(articles_SA,fill_value=0)
 similarity/=2
 similarity = similarity.add(data_word_similarities)
 similarity/=2
-plot_heatmap(similarity,"final similarity of words")
+plot_heatmap(similarity,"Similarity of keywords_all methods combined")
 ##########################################################################
 #FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
 #Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1
 #And least similar words have word_sym_matrix[i][j]=0
 #Define distance(i,j)=1-word_sym_matrix[i][j]
 distance = 1-similarity
-plot_heatmap(distance,'Distance between words')
+plot_heatmap(distance,'Distance between keywords')
 
 ##Save distance in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
 distance.to_excel(writer, sheet_name='Sheet1', index=False)
 writer.save()
+
+## Problem 4
+df = pd.read_excel('./distance.xlsx')
+df.rename(index={0:'targeted threat',1:'Advanced Persistent Threat',2:'phishing',3:'DoS attack',
+    4:'malware',5:'computer virus',6:'spyware',7:'malicious bot',8:'ransomware',9:'encryption'
+    },inplace=True)
+plot_heatmap(df,'Distance between keywords')
