@@ -178,7 +178,7 @@ url = 'https://www.bbc.co.uk/search'
 link_dict ={}
 num_pages=[]
 num_articles=[]
-
+'''
 for key in keywords:
     link_list = []
     p=1
@@ -241,14 +241,6 @@ for key in keywords:
                         else:
                             print(link)
                             good_url=False
-                    '''if check_if_textblock(link):
-                        good_url = True
-                    else:
-                        if check_if_textblock_2(link):
-                            good_url=True
-                        else:
-                            print(link)
-                            good_url=False'''
                     relevant_url=True
                     if good_url==True and relevant_url==True:
                         link_list.append(link)
@@ -285,7 +277,7 @@ for key in link_dict:
             write_urltext_into_file_3(url, path, i, key)
         else:
             write_urltext_into_file(url,path,i,key)    
-
+'''
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
@@ -448,8 +440,8 @@ zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywor
 articles_SA = create_dataframe(zero_matrix)
 calculate_cosine_similarity_dataframe(concatenated,articles_SA)
 #Min-max scaling
-articles_SA-=articles_SA.min()
-articles_SA/=(articles_SA.max()-articles_SA.min())
+articles_SA-=min(list(articles_SA.min()))
+articles_SA/=(max(list(articles_SA.max()))-min(list(articles_SA.min())))
 print('METHOD 2 to calculate similarities, resulting dataframe:')
 print(articles_SA)
 #############################################################################################################################
@@ -476,6 +468,7 @@ for key in keywords:
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         content=soup.get_text()
+        print(len(content))
         if len(content)>4802:
             content = content[:4802]
         content = re.sub('[^a-zA-Z\s]', ' ',content)
@@ -499,8 +492,8 @@ zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywor
 wiki_SA = create_dataframe(zero_matrix)
 calculate_cosine_similarity_dataframe(concatenated2,wiki_SA)
 #min-max-scaling
-wiki_SA-=wiki_SA.min()
-wiki_SA/=(wiki_SA.max()-wiki_SA.min())
+wiki_SA-=min(list(wiki_SA.min()))
+wiki_SA/=(max(list(wiki_SA.max()))-min(list(wiki_SA.min())))
 print('METHOD 3 to calculate similarities, resulting dataframe:')
 print(wiki_SA)
 ################################################################
@@ -509,6 +502,9 @@ similarity = wiki_SA.add(articles_SA,fill_value=0)
 similarity/=2
 similarity = similarity.add(data_word_similarities)
 similarity/=2
+#min-max-scaling
+similarity-=min(list(similarity.min()))
+similarity/=(max(list(similarity.max()))-min(list(similarity.min())))
 ##########################################################################
 #FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
 #Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1

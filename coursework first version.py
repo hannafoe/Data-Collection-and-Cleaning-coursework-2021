@@ -414,6 +414,7 @@ def calculate_cosine_similarity_dataframe(df,new_df):
         for index2, row2 in df.iterrows():
             y=row2
             new_df.at[index1,index2]=cosine_similarity(x,y)
+
 #####################################################################################
 #OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
 #Calculate correlation between the appearance of each keyword i in article of keyword j
@@ -501,6 +502,7 @@ dictionaries = {key:{} for key in keywords}
 count = 0
 #Go through the contents of 9 articles for each keyword
 for key in keywords:
+    print(key)
     for file in os.listdir(path):
         if file.startswith(key) and count<9:
             count+=1
@@ -521,6 +523,7 @@ for key in keywords:
                         else:
                             dictionaries[key][word]=1
     count=0
+    print(key)
 #Make a dataframe for dictionary of each keyword
 frames = []
 for i in range(len(dictionaries)):
@@ -530,13 +533,16 @@ for i in range(len(dictionaries)):
 #for each keyword, if word didn't occur for one keyword fillna with 0
 concatenated = pd.concat(frames)
 concatenated = concatenated.fillna(0)
-
+print(concatenated)
 zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
 articles_SA = create_dataframe(zero_matrix)
+
 calculate_cosine_similarity_dataframe(concatenated,articles_SA)
 #Min-max scaling
-articles_SA-=articles_SA.min()
-articles_SA/=(articles_SA.max()-articles_SA.min())
+print(articles_SA.min(),articles_SA.max())
+print(min(list(articles_SA.min())),max(list(articles_SA.max())))
+articles_SA-=min(list(articles_SA.min()))
+articles_SA/=(max(list(articles_SA.max()))-min(list(articles_SA.min())))
 print('METHOD 2 to calculate similarities, resulting dataframe:')
 print(articles_SA)
 plot_heatmap(articles_SA,"Method 2")
@@ -587,8 +593,8 @@ zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywor
 wiki_SA = create_dataframe(zero_matrix)
 calculate_cosine_similarity_dataframe(concatenated2,wiki_SA)
 #min-max-scaling
-wiki_SA-=wiki_SA.min()
-wiki_SA/=(wiki_SA.max()-wiki_SA.min())
+wiki_SA-=min(list(wiki_SA.min()))
+wiki_SA/=(max(list(wiki_SA.max()))-min(list(wiki_SA.min())))
 print('METHOD 3 to calculate similarities, resulting dataframe:')
 print(wiki_SA)
 plot_heatmap(wiki_SA,"Method 3")
@@ -598,6 +604,9 @@ similarity = wiki_SA.add(articles_SA,fill_value=0)
 similarity/=2
 similarity = similarity.add(data_word_similarities)
 similarity/=2
+#min-max-scaling
+similarity-=min(list(similarity.min()))
+similarity/=(max(list(similarity.max()))-min(list(similarity.min())))
 plot_heatmap(similarity, "Final similarity matrix")
 ##########################################################################
 #FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
