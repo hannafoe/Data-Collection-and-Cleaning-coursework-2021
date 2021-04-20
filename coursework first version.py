@@ -17,7 +17,6 @@ import copy
 keywords = ['targeted threat','Advanced Persistent Threat',
 'phishing','DoS attack','malware','computer virus','spyware',
 'malicious bot','ransomware','encryption']
-
 def try_url(url):
     try:
         res = requests.get(url,stream=True,timeout=1)
@@ -68,20 +67,11 @@ def check_if_word_in_wikipedia_website(url,word):
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         count = soup.get_text().count(word)
-        '''
-        if len(word.split())>1:
-            #print(word.split())
-            for split_word in word.split():
-                partly_similar= soup.get_text().count(split_word)
-                partly_similar/=4
-                count+=partly_similar'''
         return count
-        #if word in soup.get_text():
-        #    count+=1
             
         
 
-def write_urltext_into_file(url,path,i):
+def write_urltext_into_file(url,path,i,key):
     try:
         res = requests.get(url,stream=True)
         res.raise_for_status()
@@ -95,17 +85,98 @@ def write_urltext_into_file(url,path,i):
         soup = BeautifulSoup(txt, features='lxml')
         #Extract only the article content
         text_blocks = soup.find_all(attrs={"data-component":"text-block"})
+        if not text_blocks:
+            print(url)
         #Create new text file to store the article
         filename=key+" "+str(i)+".txt"
         path_file = os.path.join(path,filename)
         with open(path_file,'w',encoding='utf8',errors='ignore') as f:
             #Write the title into the text file
+            f.write(url+"\n")
             f.write(soup.title.get_text()+"\n")
             #Then write the whole textblock into the file
             for text in text_blocks:
                 text = text.get_text()
                 f.write(text+"\n")
-'''
+def write_urltext_into_file_2(url,path,i,key):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        #Extract only the article content
+        text_blocks = soup.find_all(['p','b'])
+        #Create new text file to store the article
+        filename=key+" "+str(i)+".txt"
+        path_file = os.path.join(path,filename)
+        with open(path_file,'w',encoding='utf8',errors='ignore') as f:
+            #Write the title into the text file
+            f.write(url+"\n")
+            f.write(soup.title.get_text()+"\n")
+            #Then write the whole textblock into the file
+            prev_text=""
+            for text in text_blocks:
+                text = text.get_text()
+                if text.strip()==prev_text.strip():
+                    continue
+                else:
+                    prev_text=text
+                f.write(text+"\n")
+def write_urltext_into_file_3(url,path,i,key):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        #Extract only the article content
+        text_blocks = soup.find_all(['p','h2','h3'])
+        #Create new text file to store the article
+        filename=key+" "+str(i)+".txt"
+        path_file = os.path.join(path,filename)
+        with open(path_file,'w',encoding='utf8',errors='ignore') as f:
+            #Write the title into the text file
+            f.write(url+"\n")
+            f.write(soup.title.get_text()+"\n")
+            #Then write the whole textblock into the file
+            prev_text=""
+            for text in text_blocks:
+                text = text.get_text()
+                if text.strip()==prev_text.strip():
+                    continue
+                else:
+                    prev_text=text
+                f.write(text+"\n")
+def check_if_textblock(url):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        #Extract only the article content
+        text_blocks = soup.find_all(attrs={"data-component":"text-block"})
+        if not text_blocks:
+            return False
+        else:
+            return True
+
 ## Problem 1
 #Python program that downloads the webpage content (from BBC news)
 #of the top 100 articles relevant to the given keywords from
@@ -114,7 +185,7 @@ url = 'https://www.bbc.co.uk/search'
 link_dict ={}
 num_pages=[]
 num_articles=[]
-
+'''
 for key in keywords:
     link_list = []
     p=1
@@ -127,17 +198,24 @@ for key in keywords:
         except Exception as err:
             print(f'Other error occurred: {err}')
         else:
-            #print('Success!')
-            #print(r.url)
             txt = r.text
             soup = BeautifulSoup(txt, features='lxml')
-            headlines = soup.find_all('a', class_=re.compile("PromoLink"))#, string=[re.compile(k, re.IGNORECASE) for k in key.split()])
+            headlines = soup.find_all('a', class_=re.compile("PromoLink"))
             if not headlines:
                 break
             for headline in headlines:
-                #print(headline)
                 link = headline['href']
                 if 'programmes' in link and 'news' not in link:
+                    print(link)
+                    continue
+                elif ('blogs' in link) or ('/newsround/' in link):
+                    print(link)
+                    continue
+                elif ('sport' in link) or ('learningenglish' in link):
+                    print(link)
+                    continue
+                elif ('live' in link) or ('/av/' in link):
+                    print(link)
                     continue
                 else:
                     #There are websites with guide in the url that do not open
@@ -145,9 +223,7 @@ for key in keywords:
                     relevant_url = False
                     good_url = True
                     if 'guides' in link:
-                        print(link) 
                         good_url = try_url(link)
-                        print(good_url)
                     #Split keyword at space
                     #Check if one of the components of keyword is included in the header
                     #THIS METHOD TAKES AWAY ARTICLES THAT ARE IRRELEVANT; BUT ALSO SOME ARTICLES THAT ARE RELEVANT
@@ -164,23 +240,25 @@ for key in keywords:
                     #        if check_if_word_in_article(link,word) ==True:
                     #            relevant_url=True
                     #            break
+                    if '.stm' in link or 'bitesize' in link:
+                        good_url=True
+                    else:
+                        if check_if_textblock(link):
+                            good_url = True
+                        else:
+                            print(link)
+                            good_url=False
+                    
                     relevant_url=True
                     if good_url==True and relevant_url==True:
-                        #print(link)
                         link_list.append(link)
             p+=1
-    #print(p)
-    #print()
     num_pages.append(p)
     num_articles.append(len(link_list))
     link_dict[key] = link_list.copy()
-    #print(len(link_dict[key]))
 for element in link_dict:
     if len(link_dict[element])>=100:
         link_dict[element]=link_dict[element][:100]
-
-#print(num_pages)
-#print(num_articles)
 
 ## Problem 2
 #Use BeautifulSoup to collect and process the articles contents. 
@@ -201,8 +279,12 @@ for key in link_dict:
     i=0
     for url in link_dict[key]:
         i+=1
-        write_urltext_into_file(url,path,i)    
-'''
+        if '.stm' in url:
+            write_urltext_into_file_2(url, path, i,key)
+        elif 'bitesize' in url:
+            write_urltext_into_file_3(url, path, i, key)
+        else:
+            write_urltext_into_file(url,path,i,key)    '''
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
@@ -325,7 +407,13 @@ def calculate_cosine_similarity(matrix,new_matrix):
             y=[matrix[l][j] for l in range(len(matrix))]
             new_matrix[i][j]=cosine_similarity(x,y)
     return new_matrix
-
+def calculate_cosine_similarity_dataframe(df,new_df):
+    for index1, row1 in df.iterrows():
+        #print(row1)
+        x=row1
+        for index2, row2 in df.iterrows():
+            y=row2
+            new_df.at[index1,index2]=cosine_similarity(x,y)
 #####################################################################################
 #OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
 #Calculate correlation between the appearance of each keyword i in article of keyword j
@@ -398,7 +486,7 @@ word_sym_matrix = calculate_cosine_similarity(sym_matrix,word_sym_matrix)
 data_word_similarities = create_dataframe(word_sym_matrix)
 #Optionally print and plot the data#
 print(data_word_similarities)
-plot_heatmap(data_word_similarities,'Similarity of keywords')
+plot_heatmap(data_word_similarities,'Similarity of keywords')#!!!!!!!!
 ##########################################################################
 #FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
 #Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1
@@ -409,104 +497,56 @@ plot_heatmap(data_word_distances,'Distance between words')
 
 ######################################################################################################################
 ##THIRD METHOD########################################################################################################
-##Look at neighbouring words##
-##Now first get all sentence with key words in them from the articles##
 dictionaries = {key:{} for key in keywords}
-#dictionaries['malware']['and']=1
-print(dictionaries)
-for key in keywords:
-    current = key
-    for file in os.listdir(path):
-        if file.startswith(key):
-            path_file = os.path.join(path,file)
-            with open(path_file,'r',encoding='utf8',errors='ignore') as f:
-                lines = f.readlines()
-                for line in lines:
-                    for other in keywords:
-                        if other in line:
-                            #Put every word in this line into dictionary of other
-                            #if word already exists in dictionary then increase the count
-                            #First split the line into words
-                            line = re.sub('[^a-zA-Z\s]', ' ', line)
-                            words = line.split()
-                            #print(words)
-                            for word in words:
-                                if word.islower()==False:
-                                    word=word.lower()
-                                if word in dictionaries[other]:
-                                    dictionaries[other][word]+=1
-                                else:
-                                    dictionaries[other][word]=1
-    print(key)                    
-print(dictionaries['malware'])
-frames = []
-for i in range(len(dictionaries)):
-    print(len(dictionaries[keywords[i]]))
-    df = pd.DataFrame(dictionaries[keywords[i]],index=[keywords[i]])
-    frames.append(df)
-
-concatenated = pd.concat(frames)
-concatenated = concatenated.fillna(0)
-print(concatenated)
-
-def calculate_cosine_similarity_dataframe(df,new_df):
-    for index1, row1 in df.iterrows():
-        #print(row1)
-        x=row1
-        for index2, row2 in df.iterrows():
-            y=row2
-            new_df.at[index1,index2]=cosine_similarity(x,y)
-
-zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
-new_df = create_dataframe(zero_matrix)
-calculate_cosine_similarity_dataframe(concatenated,new_df)
-print(new_df)
-plot_heatmap(new_df,"other distance")
-################################################################################################################
-
-dictionaries2 = {key:{} for key in keywords}
 count = 0
-
+#Go through the contents of 9 articles for each keyword
 for key in keywords:
     for file in os.listdir(path):
         if file.startswith(key) and count<9:
-            print(file)
             count+=1
             path_file = os.path.join(path,file)
             with open(path_file,'r',encoding='utf8',errors='ignore') as f:
+                #read the content line by line
                 lines = f.readlines()
                 for line in lines:
+                    #split the lines into words
                     line = re.sub('[^a-zA-Z\s]', ' ', line)
                     words = line.split()
-                    #print(words)
+                    #save them in dictionary, along with occurence count
                     for word in words:
                         if word.islower()==False:
                             word=word.lower()
-                        if word in dictionaries2[key]:
-                            dictionaries2[key][word]+=1
+                        if word in dictionaries[key]:
+                            dictionaries[key][word]+=1
                         else:
-                            dictionaries2[key][word]=1
-    print(key)
+                            dictionaries[key][word]=1
     count=0
-frames2 = []
-for i in range(len(dictionaries2)):
-    print(len(dictionaries2[keywords[i]]))
-    df = pd.DataFrame(dictionaries2[keywords[i]],index=[keywords[i]])
-    frames2.append(df)
+#Make a dataframe for dictionary of each keyword
+frames = []
+for i in range(len(dictionaries)):
+    df = pd.DataFrame(dictionaries[keywords[i]],index=[keywords[i]])
+    frames.append(df)
+#concatenate all dataframes to huge dictionary, with occurence count of all words
+#for each keyword, if word didn't occur for one keyword fillna with 0
+concatenated = pd.concat(frames)
+concatenated = concatenated.fillna(0)
 
-concatenated2 = pd.concat(frames2)
-concatenated2 = concatenated2.fillna(0)
-print(concatenated2)
 zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
-new_df2 = create_dataframe(zero_matrix)
-calculate_cosine_similarity_dataframe(concatenated2,new_df2)
-print(new_df2)
-new_df2-=0.84
-new_df2/=0.16
-plot_heatmap(new_df2,"other distance")
+articles_SA = create_dataframe(zero_matrix)
+calculate_cosine_similarity_dataframe(concatenated,articles_SA)
+#Min-max scaling
+articles_SA-=articles_SA.min()
+articles_SA/=(articles_SA.max()-articles_SA.min())
+print('METHOD 2 to calculate similarities, resulting dataframe:')
+print(articles_SA)
+plot_heatmap(articles_SA,"Method 2")
 #############################################################################################################################
+##METHOD 3##
+##Do a semantic analysis on the wikipedia articles of each keyword
+##cut down the number of words to the number of words encountered in the shortest article
+##Code is very similar to third method
 url_wikipedia = 'https://en.wikipedia.org/wiki/'
-dictionaries3 = {key:{} for key in keywords}
+dictionaries2 = {key:{} for key in keywords}
 
 for key in keywords:
     k = key
@@ -524,58 +564,70 @@ for key in keywords:
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         content=soup.get_text()
-        print(len(content))
         if len(content)>4802:
             content = content[:4802]
-        print(len(content))
         content = re.sub('[^a-zA-Z\s]', ' ',content)
         words = content.split()
-        #print(words)
         for word in words:
             if word.islower()==False:
                 word=word.lower()
-            if word in dictionaries3[key]:
-                dictionaries3[key][word]+=1
+            if word in dictionaries2[key]:
+                dictionaries2[key][word]+=1
             else:
-                dictionaries3[key][word]=1
-    print(key)
+                dictionaries2[key][word]=1
 
-frames3 = []
-for i in range(len(dictionaries3)):
-    print(len(dictionaries3[keywords[i]]))
-    df = pd.DataFrame(dictionaries3[keywords[i]],index=[keywords[i]])
-    frames3.append(df)
+frames2 = []
+for i in range(len(dictionaries2)):
+    df = pd.DataFrame(dictionaries2[keywords[i]],index=[keywords[i]])
+    frames2.append(df)
 
-concatenated3 = pd.concat(frames3)
-concatenated3 = concatenated3.fillna(0)
-print(concatenated3)
+concatenated2 = pd.concat(frames2)
+concatenated2 = concatenated2.fillna(0)
 zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
-new_df3 = create_dataframe(zero_matrix)
-calculate_cosine_similarity_dataframe(concatenated3,new_df3)
-print(new_df3)
-#new_df3-=0.6
-#new_df3/=0.4
-new_df3-=0.4
-new_df3/=0.6
-plot_heatmap(new_df3,"other distance")
-
-
-df_add_ver1 = data_word_similarities.add(new_df3,fill_value=0)
-df_add_ver1/=2
-plot_heatmap(df_add_ver1,"df_add_ver1")
-df_add_ver2 = df_add_ver1.add(new_df,fill_value=0)
-df_add_ver2/=2
-plot_heatmap(df_add_ver2,"df_add_ver2")
-df_add_ver3 = df_add_ver2.add(new_df2,fill_value=0)
-df_add_ver3/=2
-plot_heatmap(df_add_ver3,"df_add_ver3")
-
-##Save data_word_distances in distance.xlsx 
+wiki_SA = create_dataframe(zero_matrix)
+calculate_cosine_similarity_dataframe(concatenated2,wiki_SA)
+#min-max-scaling
+wiki_SA-=wiki_SA.min()
+wiki_SA/=(wiki_SA.max()-wiki_SA.min())
+print('METHOD 3 to calculate similarities, resulting dataframe:')
+print(wiki_SA)
+plot_heatmap(wiki_SA,"Method 3")
+################################################################
+#Now add all methods together:
+similarity = wiki_SA.add(articles_SA,fill_value=0)
+similarity/=2
+similarity = similarity.add(data_word_similarities)
+similarity/=2
+plot_heatmap(similarity, "Final similarity matrix")
+##########################################################################
+#FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
+#Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1
+#And least similar words have word_sym_matrix[i][j]=0
+#Define distance(i,j)=1-word_sym_matrix[i][j]
+distance = 1-similarity
+print('FINAL DISTANCE MATRIX: ')
+print(distance)
+plot_heatmap(distance, 'Final distance matrix')
+##Save distance in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
-data_word_distances.to_excel(writer, sheet_name='Sheet1', index=False)
+distance.to_excel(writer, sheet_name='Sheet1', index=False)
 writer.save()
 
 ## Problem 4
+def plot_heatmap2(df,title):
+    fig = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6},linewidths=.5,fmt=".2f")
+    fig.get_figure().tight_layout()
+    fig.get_figure().savefig(title+".png",dpi=300)
 df = pd.read_excel('./distance.xlsx')
-plot_heatmap(data_word_distances,'Distance between words')
-#sns.pairplot(data=df1,hue='Keywords')
+df.rename(index={0:'targeted threat',1:'Advanced Persistent Threat',2:'phishing',3:'DoS attack',
+    4:'malware',5:'computer virus',6:'spyware',7:'malicious bot',8:'ransomware',9:'encryption'
+    },inplace=True)
+plot_heatmap2(df,'Distance between keywords')
+
+
+
+
+
+
+
+

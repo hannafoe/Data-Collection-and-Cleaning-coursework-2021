@@ -169,24 +169,7 @@ def check_if_textblock(url):
             return False
         else:
             return True
-def check_if_textblock_2(url):
-    try:
-        res = requests.get(url,stream=True)
-        res.raise_for_status()
-    except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')
-    except Exception as err:
-        print(f'Other error occurred: {err}')
-    else:
-        #Get the text component of the website
-        txt = res.text
-        soup = BeautifulSoup(txt, features='lxml')
-        #Extract only the article content
-        text_blocks = soup.find_all(['p','b'])
-        if not text_blocks:
-            return False
-        else:
-            return True
+
 ## Problem 1
 #Python program that downloads the webpage content (from BBC news)
 #of the top 100 articles relevant to the given keywords from
