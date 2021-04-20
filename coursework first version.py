@@ -220,7 +220,7 @@ path = os.path.join(cur_dir,new_dir)
 #In the case that a keyword i is very very similar, keyword i is found in all 100 articles of key j
 #Then occur_matrix[i][j]=100
 #
-'''
+
 occur_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 i=-1
 k=0
@@ -253,7 +253,7 @@ occur_matrix_original = copy.deepcopy(occur_matrix)
 #            occur_matrix[i][j]=1
 #        else:
 #            if occur_matrix[i][j]!=0:
-#                occur_matrix[i][j]=occur_matrix[i][j]/num_articles[i]'''
+#                occur_matrix[i][j]=occur_matrix[i][j]/num_articles[i]
 ########################################################################################
 #FUNCTIONS TO CALCULATE THE SIMILARITY BETWEEN TWO KEYWORDS#############################
 #Function to calculate the pearson correlation between two keywords i and j
@@ -311,7 +311,7 @@ def create_dataframe(matrix):
     return df
 def plot_heatmap(df,title):
     fig, ax = plt.subplots()
-    ax = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6})
+    ax = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6},linewidths=.5,fmt=".2f")
     ax.set_title(title, fontsize=10, fontweight='bold')
     fig.tight_layout()
     plt.show()
@@ -325,12 +325,12 @@ def calculate_cosine_similarity(matrix,new_matrix):
             y=[matrix[l][j] for l in range(len(matrix))]
             new_matrix[i][j]=cosine_similarity(x,y)
     return new_matrix
-'''
+
 #####################################################################################
 #OPTIONAL: JUST FOR COMPARISON WITH THE FINAL SIMILARITY MATRIX#
 #Calculate correlation between the appearance of each keyword i in article of keyword j
 art_word_corr=[[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
-art_word_corr=calculate_cosine_similarity(occur_matrix_original,art_word_corr)
+art_word_corr=calculate_cosine_similarity(occur_matrix,art_word_corr)
 data_art_word_corr=create_dataframe(art_word_corr)
 #Optionally print and plot the data#
 print(data_art_word_corr)
@@ -448,7 +448,7 @@ for i in range(len(dictionaries)):
 concatenated = pd.concat(frames)
 concatenated = concatenated.fillna(0)
 print(concatenated)
-'''
+
 def calculate_cosine_similarity_dataframe(df,new_df):
     for index1, row1 in df.iterrows():
         #print(row1)
@@ -456,12 +456,12 @@ def calculate_cosine_similarity_dataframe(df,new_df):
         for index2, row2 in df.iterrows():
             y=row2
             new_df.at[index1,index2]=cosine_similarity(x,y)
-'''
+
 zero_matrix=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0] for i in range(len(keywords))]
 new_df = create_dataframe(zero_matrix)
 calculate_cosine_similarity_dataframe(concatenated,new_df)
 print(new_df)
-plot_heatmap(new_df,"other distance")'''
+plot_heatmap(new_df,"other distance")
 ################################################################################################################
 
 dictionaries2 = {key:{} for key in keywords}
@@ -559,7 +559,7 @@ new_df3-=0.4
 new_df3/=0.6
 plot_heatmap(new_df3,"other distance")
 
-'''
+
 df_add_ver1 = data_word_similarities.add(new_df3,fill_value=0)
 df_add_ver1/=2
 plot_heatmap(df_add_ver1,"df_add_ver1")
@@ -569,8 +569,7 @@ plot_heatmap(df_add_ver2,"df_add_ver2")
 df_add_ver3 = df_add_ver2.add(new_df2,fill_value=0)
 df_add_ver3/=2
 plot_heatmap(df_add_ver3,"df_add_ver3")
-'''
-'''
+
 ##Save data_word_distances in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
 data_word_distances.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -580,4 +579,3 @@ writer.save()
 df = pd.read_excel('./distance.xlsx')
 plot_heatmap(data_word_distances,'Distance between words')
 #sns.pairplot(data=df1,hue='Keywords')
-'''
