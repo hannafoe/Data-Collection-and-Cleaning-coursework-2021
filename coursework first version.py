@@ -605,8 +605,8 @@ similarity/=2
 similarity = similarity.add(data_word_similarities)
 similarity/=2
 #min-max-scaling
-similarity-=min(list(similarity.min()))
-similarity/=(max(list(similarity.max()))-min(list(similarity.min())))
+#similarity-=min(list(similarity.min()))
+#similarity/=(max(list(similarity.max()))-min(list(similarity.min())))
 plot_heatmap(similarity, "Final similarity matrix")
 ##########################################################################
 #FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS

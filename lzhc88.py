@@ -178,7 +178,7 @@ url = 'https://www.bbc.co.uk/search'
 link_dict ={}
 num_pages=[]
 num_articles=[]
-'''
+
 for key in keywords:
     link_list = []
     p=1
@@ -277,7 +277,7 @@ for key in link_dict:
             write_urltext_into_file_3(url, path, i, key)
         else:
             write_urltext_into_file(url,path,i,key)    
-'''
+
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
@@ -502,9 +502,6 @@ similarity = wiki_SA.add(articles_SA,fill_value=0)
 similarity/=2
 similarity = similarity.add(data_word_similarities)
 similarity/=2
-#min-max-scaling
-similarity-=min(list(similarity.min()))
-similarity/=(max(list(similarity.max()))-min(list(similarity.min())))
 ##########################################################################
 #FINAL STEP: CALCULATE DISTANCE BETWEEN WORDS
 #Since similiarity is scaled such that most similar words have word_sym_matrix[i][j]=1
