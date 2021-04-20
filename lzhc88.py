@@ -1,16 +1,10 @@
 import requests
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
-from lxml import html
-import textwrap
 import re
 import os
-import numpy as np
 import pandas as pd
 import seaborn as sns
-import xlsxwriter
-from statistics import mean
-import copy
 ##python version 3.8
 #reusable functions and variables
 keywords = ['targeted threat','Advanced Persistent Threat',
@@ -70,7 +64,7 @@ def check_if_word_in_wikipedia_website(url,word):
             
         
 
-def write_urltext_into_file(url,path,i):
+def write_urltext_into_file(url,path,i,key):
     try:
         res = requests.get(url,stream=True)
         res.raise_for_status()
@@ -94,7 +88,100 @@ def write_urltext_into_file(url,path,i):
             for text in text_blocks:
                 text = text.get_text()
                 f.write(text+"\n")
-
+def write_urltext_into_file_2(url,path,i,key):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        #Extract only the article content
+        text_blocks = soup.find_all(['p','b'])
+        #Create new text file to store the article
+        filename=key+" "+str(i)+".txt"
+        path_file = os.path.join(path,filename)
+        with open(path_file,'w',encoding='utf8',errors='ignore') as f:
+            #Write the title into the text file
+            f.write(soup.title.get_text()+"\n")
+            #Then write the whole textblock into the file
+            prev_text=""
+            for text in text_blocks:
+                text = text.get_text()
+                if text.strip()==prev_text.strip():
+                    continue
+                else:
+                    prev_text=text
+                f.write(text+"\n")
+def write_urltext_into_file_3(url,path,i,key):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        #Extract only the article content
+        text_blocks = soup.find_all(['p','h2','h3'])
+        #Create new text file to store the article
+        filename=key+" "+str(i)+".txt"
+        path_file = os.path.join(path,filename)
+        with open(path_file,'w',encoding='utf8',errors='ignore') as f:
+            #Write the title into the text file
+            f.write(soup.title.get_text()+"\n")
+            #Then write the whole textblock into the file
+            prev_text=""
+            for text in text_blocks:
+                text = text.get_text()
+                if text.strip()==prev_text.strip():
+                    continue
+                else:
+                    prev_text=text
+                f.write(text+"\n")
+def check_if_textblock(url):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        #Extract only the article content
+        text_blocks = soup.find_all(attrs={"data-component":"text-block"})
+        if not text_blocks:
+            return False
+        else:
+            return True
+def check_if_textblock_2(url):
+    try:
+        res = requests.get(url,stream=True)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        #Get the text component of the website
+        txt = res.text
+        soup = BeautifulSoup(txt, features='lxml')
+        #Extract only the article content
+        text_blocks = soup.find_all(['p','b'])
+        if not text_blocks:
+            return False
+        else:
+            return True
 ## Problem 1
 #Python program that downloads the webpage content (from BBC news)
 #of the top 100 articles relevant to the given keywords from
@@ -124,6 +211,10 @@ for key in keywords:
             for headline in headlines:
                 link = headline['href']
                 if 'programmes' in link and 'news' not in link:
+                    print(link)
+                    continue
+                elif ('blogs' in link or 'sport' in link or 'learningenglish' in link or 'live' in link or '/av/' in link or '/newsround/' in link):
+                    print(link)
                     continue
                 else:
                     #There are websites with guide in the url that do not open
@@ -148,6 +239,21 @@ for key in keywords:
                     #        if check_if_word_in_article(link,word) ==True:
                     #            relevant_url=True
                     #            break
+                    '''if ('.stm' in url or 'bitesize' in url):
+                        good_url=True
+                    else:
+                        if check_if_textblock(link):
+                            good_url = True
+                        else:
+                            good_url=False'''
+                    '''if check_if_textblock(link):
+                        good_url = True
+                    else:
+                        if check_if_textblock_2(link):
+                            good_url=True
+                        else:
+                            print(link)
+                            good_url=False'''
                     relevant_url=True
                     if good_url==True and relevant_url==True:
                         link_list.append(link)
@@ -178,7 +284,12 @@ for key in link_dict:
     i=0
     for url in link_dict[key]:
         i+=1
-        write_urltext_into_file(url,path,i)    
+        if '.stm' in url:
+            write_urltext_into_file_2(url, path, i,key)
+        elif 'bitesize' in url:
+            write_urltext_into_file_3(url, path, i, key)
+        else:
+            write_urltext_into_file(url,path,i,key)    
 
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
@@ -298,6 +409,7 @@ word_sym_matrix = [[0,0,0,0,0,0,0,0,0,0] for i in range(len(keywords))]
 word_sym_matrix = calculate_cosine_similarity(sym_matrix,word_sym_matrix)
 data_word_similarities = create_dataframe(word_sym_matrix)
 #Optionally print the data#
+print('METHOD 1 to calculate similarities, resulting dataframe:')
 print(data_word_similarities)
 ##########################################################################
 ##METHOD 2############################################################
@@ -343,6 +455,7 @@ calculate_cosine_similarity_dataframe(concatenated,articles_SA)
 #Min-max scaling
 articles_SA-=articles_SA.min()
 articles_SA/=(articles_SA.max()-articles_SA.min())
+print('METHOD 2 to calculate similarities, resulting dataframe:')
 print(articles_SA)
 #############################################################################################################################
 ##METHOD 3##
@@ -393,6 +506,7 @@ calculate_cosine_similarity_dataframe(concatenated2,wiki_SA)
 #min-max-scaling
 wiki_SA-=wiki_SA.min()
 wiki_SA/=(wiki_SA.max()-wiki_SA.min())
+print('METHOD 3 to calculate similarities, resulting dataframe:')
 print(wiki_SA)
 ################################################################
 #Now add all methods together:
@@ -406,7 +520,8 @@ similarity/=2
 #And least similar words have word_sym_matrix[i][j]=0
 #Define distance(i,j)=1-word_sym_matrix[i][j]
 distance = 1-similarity
-
+print('FINAL DISTANCE MATRIX: ')
+print(distance)
 ##Save distance in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
 distance.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -414,7 +529,7 @@ writer.save()
 
 ## Problem 4
 def plot_heatmap(df,title):
-    fig = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6},square=True,linewidths=.5,fmt=".2f")
+    fig = sns.heatmap(df,cmap='BrBG',annot=True,annot_kws={'size':6},linewidths=.5,fmt=".2f")
     fig.get_figure().tight_layout()
     fig.get_figure().savefig(title+".png",dpi=300)
 df = pd.read_excel('./distance.xlsx')
