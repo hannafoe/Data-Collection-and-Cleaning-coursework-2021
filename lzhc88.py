@@ -187,7 +187,7 @@ url = 'https://www.bbc.co.uk/search'
 link_dict ={}
 num_pages=[]
 num_articles=[]
-'''
+
 for key in keywords:
     link_list = []
     p=1
@@ -286,7 +286,7 @@ for key in link_dict:
             write_urltext_into_file_3(url, path, i, key)
         else:
             write_urltext_into_file(url,path,i,key)    
-'''
+
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
