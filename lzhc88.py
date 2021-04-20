@@ -4,12 +4,21 @@ from bs4 import BeautifulSoup
 import re
 import os
 import pandas as pd
+import xlsxwriter
 import seaborn as sns
 ##python version 3.8
 #reusable functions and variables
-keywords = ['targeted threat','Advanced Persistent Threat',
-'phishing','DoS attack','malware','computer virus','spyware',
-'malicious bot','ransomware','encryption']
+#first get keywords from excel file
+keyword_file = './keywords.xlsx'
+try:
+    keyword_df = pd.read_excel(pd.ExcelFile(keyword_file))
+    keywords = list(keyword_df['Keywords'])
+except:
+    keywords = ['targeted threat','Advanced Persistent Threat',
+    'phishing','DoS attack','malware','computer virus','spyware',
+    'malicious bot','ransomware','encryption']
+
+
 def try_url(url):
     try:
         res = requests.get(url,stream=True,timeout=1)
@@ -178,7 +187,7 @@ url = 'https://www.bbc.co.uk/search'
 link_dict ={}
 num_pages=[]
 num_articles=[]
-
+'''
 for key in keywords:
     link_list = []
     p=1
@@ -277,7 +286,7 @@ for key in link_dict:
             write_urltext_into_file_3(url, path, i, key)
         else:
             write_urltext_into_file(url,path,i,key)    
-
+'''
 ## Problem 3#########################################################################################################################
 #Program to calculate the semantic distances between each two keywords
 #which belong to the list of keywords saved in keywords.xlsx
@@ -468,7 +477,6 @@ for key in keywords:
         txt = res.text
         soup = BeautifulSoup(txt, features='lxml')
         content=soup.get_text()
-        print(len(content))
         if len(content)>4802:
             content = content[:4802]
         content = re.sub('[^a-zA-Z\s]', ' ',content)
@@ -512,7 +520,12 @@ print('FINAL DISTANCE MATRIX: ')
 print(distance)
 ##Save distance in distance.xlsx 
 writer = pd.ExcelWriter('./distance.xlsx',engine='xlsxwriter')
-distance.to_excel(writer, sheet_name='Sheet1', index=False)
+distance.to_excel(writer, sheet_name='Sheet1', index=True)
+wb = writer.book
+ws = writer.sheets['Sheet1']
+cell_format = wb.add_format({'bold': True})
+cell_format.set_font_color('red')
+ws.write('A1','Keywords',cell_format)
 writer.save()
 
 ## Problem 4
@@ -521,6 +534,8 @@ def plot_heatmap(df,title):
     fig.get_figure().tight_layout()
     fig.get_figure().savefig(title+".png",dpi=300)
 df = pd.read_excel('./distance.xlsx')
+df.drop('Keywords',axis=1,inplace=True)
+print(df)
 df.rename(index={0:'targeted threat',1:'Advanced Persistent Threat',2:'phishing',3:'DoS attack',
     4:'malware',5:'computer virus',6:'spyware',7:'malicious bot',8:'ransomware',9:'encryption'
     },inplace=True)
