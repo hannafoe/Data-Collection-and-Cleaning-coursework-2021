@@ -78,11 +78,14 @@ def write_urltext_into_file(url,path,i,key):
         soup = BeautifulSoup(txt, features='lxml')
         #Extract only the article content
         text_blocks = soup.find_all(attrs={"data-component":"text-block"})
+        if not text_blocks:
+            print(url)
         #Create new text file to store the article
         filename=key+" "+str(i)+".txt"
         path_file = os.path.join(path,filename)
         with open(path_file,'w',encoding='utf8',errors='ignore') as f:
             #Write the title into the text file
+            f.write(url+"\n")
             f.write(soup.title.get_text()+"\n")
             #Then write the whole textblock into the file
             for text in text_blocks:
@@ -107,6 +110,7 @@ def write_urltext_into_file_2(url,path,i,key):
         path_file = os.path.join(path,filename)
         with open(path_file,'w',encoding='utf8',errors='ignore') as f:
             #Write the title into the text file
+            f.write(url+"\n")
             f.write(soup.title.get_text()+"\n")
             #Then write the whole textblock into the file
             prev_text=""
@@ -136,6 +140,7 @@ def write_urltext_into_file_3(url,path,i,key):
         path_file = os.path.join(path,filename)
         with open(path_file,'w',encoding='utf8',errors='ignore') as f:
             #Write the title into the text file
+            f.write(url+"\n")
             f.write(soup.title.get_text()+"\n")
             #Then write the whole textblock into the file
             prev_text=""
@@ -213,7 +218,13 @@ for key in keywords:
                 if 'programmes' in link and 'news' not in link:
                     print(link)
                     continue
-                elif ('blogs' in link or 'sport' in link or 'learningenglish' in link or 'live' in link or '/av/' in link or '/newsround/' in link):
+                elif ('blogs' in link) or ('/newsround/' in link):
+                    print(link)
+                    continue
+                elif ('sport' in link) or ('learningenglish' in link):
+                    print(link)
+                    continue
+                elif ('live' in link) or ('/av/' in link):
                     print(link)
                     continue
                 else:
@@ -239,13 +250,14 @@ for key in keywords:
                     #        if check_if_word_in_article(link,word) ==True:
                     #            relevant_url=True
                     #            break
-                    '''if ('.stm' in url or 'bitesize' in url):
+                    if '.stm' in link or 'bitesize' in link:
                         good_url=True
                     else:
                         if check_if_textblock(link):
                             good_url = True
                         else:
-                            good_url=False'''
+                            print(link)
+                            good_url=False
                     '''if check_if_textblock(link):
                         good_url = True
                     else:
