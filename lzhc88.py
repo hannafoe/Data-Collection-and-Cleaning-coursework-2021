@@ -9,11 +9,14 @@ import seaborn as sns
 ##python version 3.8
 #reusable functions and variables
 #first get keywords from excel file
+#Hi I made a change
+print('HIHI')
 keyword_file = './keywords.xlsx'
 try:
     keyword_df = pd.read_excel(pd.ExcelFile(keyword_file))
     keywords = list(keyword_df['Keywords'])
 except:
+    print('./keywords.xlsx does not exist. Continue with given set of keywords.')
     keywords = ['targeted threat','Advanced Persistent Threat',
     'phishing','DoS attack','malware','computer virus','spyware',
     'malicious bot','ransomware','encryption']
@@ -25,13 +28,13 @@ def try_url(url):
         # If the response was successful, no Exception will be raised
         res.raise_for_status()
     except HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')
+        #print(f'HTTP error occurred: {http_err}')
         return False
     except Exception as err:
-        print(f'Other error occurred: {err}')
+        #print(f'Other error occurred: {err}')
         return False
     else:
-        print("success")
+        #print("success")
         return True
 
 def check_if_word_in_article(url,word):
@@ -40,8 +43,10 @@ def check_if_word_in_article(url,word):
         res.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
+        return False
     except Exception as err:
         print(f'Other error occurred: {err}')
+        return False
     else:
         #Get the text component of the website
         txt = res.text
@@ -62,8 +67,10 @@ def check_if_word_in_wikipedia_website(url,word):
         res.raise_for_status()
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
+        return False
     except Exception as err:
         print(f'Other error occurred: {err}')
+        return False
     else:
         #Get the text component of the website
         txt = res.text
@@ -208,16 +215,12 @@ for key in keywords:
             for headline in headlines:
                 link = headline['href']
                 if 'programmes' in link and 'news' not in link:
-                    print(link)
                     continue
                 elif ('blogs' in link) or ('/newsround/' in link):
-                    print(link)
                     continue
                 elif ('sport' in link) or ('learningenglish' in link):
-                    print(link)
                     continue
                 elif ('live' in link) or ('/av/' in link):
-                    print(link)
                     continue
                 else:
                     #There are websites with guide in the url that do not open
@@ -248,7 +251,6 @@ for key in keywords:
                         if check_if_textblock(link):
                             good_url = True
                         else:
-                            print(link)
                             good_url=False
                     relevant_url=True
                     if good_url==True and relevant_url==True:
@@ -535,7 +537,6 @@ def plot_heatmap(df,title):
     fig.get_figure().savefig(title+".png",dpi=300)
 df = pd.read_excel('./distance.xlsx')
 df.drop('Keywords',axis=1,inplace=True)
-print(df)
 df.rename(index={0:'targeted threat',1:'Advanced Persistent Threat',2:'phishing',3:'DoS attack',
     4:'malware',5:'computer virus',6:'spyware',7:'malicious bot',8:'ransomware',9:'encryption'
     },inplace=True)
