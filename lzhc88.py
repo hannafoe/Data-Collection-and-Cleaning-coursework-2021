@@ -9,8 +9,7 @@ import seaborn as sns
 ##python version 3.8
 #reusable functions and variables
 #first get keywords from excel file
-#Hi I made a change
-print('HIHI')
+
 keyword_file = './keywords.xlsx'
 try:
     keyword_df = pd.read_excel(pd.ExcelFile(keyword_file))
