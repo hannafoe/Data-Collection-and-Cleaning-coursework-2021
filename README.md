@@ -1,4 +1,5 @@
 # Assignment
+NOTE: My code is located in lzhc88.py and my summative report is in lzhc88_report_data_collection_cleaning.pdf.
 You are asked to investigate distances between those 10 keywords by collecting the data from BBC news, processing and analyzing it. You need to also submit a simple report to explain your algorithm (problem 3) and the visualization of the result(problem 4).
 - Problem 1. (20%)
 Create a Python program that downloads the webpage content (from BBC news) of the top 100 articles relevant to the given keywords from the following url:
