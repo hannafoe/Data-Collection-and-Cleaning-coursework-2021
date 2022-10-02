@@ -1,5 +1,5 @@
 # Assignment
-*NOTE: My code is located in lzhc88.py and my summative report is in lzhc88_report_data_collection_cleaning.pdf.*
+*NOTE: My code is located in DataCollection&Cleaning.py and my summative report is in report_data_collection_cleaning.pdf.*
 
 You are asked to investigate distances between those 10 keywords by collecting the data from BBC news, processing and analyzing it. You need to also submit a simple report to explain your algorithm (problem 3) and the visualization of the result(problem 4).
 - Problem 1. (20%)
